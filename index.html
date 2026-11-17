@@ -159,14 +159,15 @@
   <main class="container">
 <section class="card panel no-print" style="margin-bottom:20px" aria-labelledby="authTitle">
 <h2 id="authTitle">Acesso de demonstração / Banco PostgreSQL</h2>
-<p class="subtitle" style="margin:10px 0">Visitação pública: interface com dados fictícios temporários. Para testar persistência, crie uma conta de teste e entre. Não utilize informações reais de pacientes.</p>
+<p class="subtitle" style="margin:10px 0">Acesso livre sem login: dados fictícios temporários. Para testar registros persistentes, use a conta compartilhada DEMO fornecida pelo responsável pelo projeto. Não utilize dados reais de pacientes.</p>
 <p id="authStatus" class="demo-strip" role="status">Modo público: demonstração local com dados fictícios</p>
+<p id="demoQuota" class="demo-strip hidden" role="status" aria-live="polite"></p>
 <div class="form-grid" style="margin-top:12px">
-<div class="field"><label for="authEmail">Email da conta de testes</label><input id="authEmail" type="email" autocomplete="username" placeholder="teste@exemplo.com"></div>
+<div class="field"><label for="authEmail">Email da conta de testes</label><input id="authEmail" type="email" autocomplete="username" value="avaliador.ubs.caic@example.com" placeholder="Email de avaliação"></div>
 <div class="field"><label for="authPassword">Senha da conta de testes</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="Mínimo de 8 caracteres"></div>
 </div>
 <div class="form-actions"><button id="loginButton" type="button" class="btn btn-primary">Entrar — modo persistente</button>
-<button id="signupButton" type="button" class="btn btn-outline">Criar conta de testes</button>
+<button id="signupButton" type="button" class="btn btn-outline hidden" disabled aria-hidden="true">Cadastro desativado</button>
 <button id="logoutOperator" type="button" class="btn btn-outline hidden">Encerrar sessão persistente</button></div>
 </section>
     <div id="globalSuccess" class="success hidden" role="status" aria-live="polite"></div>
@@ -274,7 +275,7 @@
         </div>
         <div class="table-wrap">
           <table aria-label="Resultados de exames preventivos">
-            <thead><tr><th>Protocolo</th><th>Paciente</th><th>WhatsApp</th><th>Status</th><th class="no-print">Ação</th></tr></thead>
+            <thead><tr><th>Protocolo</th><th>Paciente</th><th>WhatsApp</th><th>Status</th><th class="no-print">Ação</th><th class="no-print">Excluir</th></tr></thead>
             <tbody id="examTableBody"></tbody>
           </table>
         </div>
@@ -290,7 +291,7 @@
         </div>
         <div class="table-wrap">
           <table aria-label="Consultas agendadas">
-            <thead><tr><th>Paciente</th><th>WhatsApp</th><th>Especialidade</th><th>Data / Horário</th><th>Status</th></tr></thead>
+            <thead><tr><th>Paciente</th><th>WhatsApp</th><th>Especialidade</th><th>Data / Horário</th><th>Status</th><th class="no-print">Excluir</th></tr></thead>
             <tbody id="appointmentTableBody"></tbody>
           </table>
         </div>
@@ -308,6 +309,8 @@
   const API = "https://vxaxhuxisigohsojsyct.supabase.co";
   const KEY = "sb_publishable_jp_YeYEdgEjx8vCsBWxULw_HHjcqzt6";
   let session = null;
+  let isDemo = false;
+  const DEMO_LIMIT = 10;
   let currentMode = "consulta";
   let appointments = [
     {name:"João Carlos Pereira",phone:"(41) 98888-1101",specialty:"Clínico Geral",date:"15/11/2026 08:30",status:"cancelled"},
@@ -363,13 +366,14 @@
     return v[2]+"/"+v[1]+"/"+v[0];
   }
   function render() {
-    $("appointmentTableBody").innerHTML=appointments.map(a => {
+    $("appointmentTableBody").innerHTML=appointments.map((a,i) => {
       const isCancelled=a.status==="cancelled";
       const st=isCancelled?'<span class="badge cancelled">✕ Cancelado — vaga livre</span>':
         a.status==="pending"?'<span class="badge ready">◷ Pendente</span>':
         '<span class="badge confirmed">✓ Confirmado (demonstração)</span>';
-      return '<tr><td class="patient">'+escapeHtml(a.name)+'</td><td>'+escapeHtml(a.phone)+'</td><td>'+escapeHtml(a.specialty)+'</td><td>'+escapeHtml(a.date)+'</td><td>'+st+'</td></tr>';
-    }).join("") || '<tr><td colspan="5" class="empty">Nenhuma consulta registrada.</td></tr>';
+      const del=session&&a.id?'<button class="btn btn-danger btn-small no-print" type="button" data-delete-consult="'+i+'" aria-label="Excluir consulta de '+escapeHtml(a.name)+'">Excluir</button>':'<span class="help">—</span>';
+      return '<tr><td class="patient">'+escapeHtml(a.name)+'</td><td>'+escapeHtml(a.phone)+'</td><td>'+escapeHtml(a.specialty)+'</td><td>'+escapeHtml(a.date)+'</td><td>'+st+'</td><td class="no-print">'+del+'</td></tr>';
+    }).join("") || '<tr><td colspan="6" class="empty">Nenhuma consulta registrada.</td></tr>';
     $("examTableBody").innerHTML=exams.map((e,i) => {
       const ready=e.status==="ready";
       const sent=e.status==="sent";
@@ -378,12 +382,15 @@
         '<span class="badge ready">◷ Aguardando laboratório</span>';
       const action=sent?'<span class="help">Ação concluída</span>':
         '<button class="btn btn-success btn-small no-print" type="button" data-notify="'+i+'">Registrar disponibilidade</button>';
-      return '<tr><td class="patient">'+escapeHtml(e.protocol)+'</td><td>'+escapeHtml(e.name)+'</td><td>'+escapeHtml(e.phone)+'</td><td>'+st+'</td><td class="no-print">'+action+'</td></tr>';
-    }).join("") || '<tr><td colspan="5" class="empty">Nenhum exame registrado.</td></tr>';
+      const del=session&&e.id?'<button class="btn btn-danger btn-small no-print" type="button" data-delete-exam="'+i+'" aria-label="Excluir exame '+escapeHtml(e.protocol)+'">Excluir</button>':'<span class="help">—</span>';
+      return '<tr><td class="patient">'+escapeHtml(e.protocol)+'</td><td>'+escapeHtml(e.name)+'</td><td>'+escapeHtml(e.phone)+'</td><td>'+st+'</td><td class="no-print">'+action+'</td><td class="no-print">'+del+'</td></tr>';
+    }).join("") || '<tr><td colspan="6" class="empty">Nenhum exame registrado.</td></tr>';
     $("countConsultas").textContent=String(appointments.length);
     $("countCanceladas").textContent=String(appointments.filter(a=>a.status==="cancelled").length);
     $("countExames").textContent=String(exams.filter(e=>e.status==="ready").length);
-    $("authStatus").textContent=session?"Modo persistente: Supabase PostgreSQL — apenas dados fictícios":"Modo público: demonstração local com dados fictícios";
+    $("authStatus").textContent=session?(isDemo?"Conta DEMO compartilhada — PostgreSQL Supabase, somente dados fictícios":"Modo persistente: Supabase PostgreSQL — apenas dados fictícios"):"Modo público: demonstração local com dados fictícios";
+    $("demoQuota").classList.toggle("hidden",!session||!isDemo);
+    if(session&&isDemo){const n=appointments.length+exams.length; $("demoQuota").textContent="Conta DEMO: "+n+"/"+DEMO_LIMIT+" registros utilizados (consultas + exames). "+(n>=DEMO_LIMIT?"Limite atingido: exclua um registro para liberar uma vaga.":"Restam "+(DEMO_LIMIT-n)+" vagas.");}
   }
   async function api(path,method="GET",body=null,authOverride=null) {
     const headers={"apikey":KEY,"Content-Type":"application/json"};
@@ -399,12 +406,13 @@
   const reverseSpec=Object.fromEntries(Object.entries(specialties).map(([k,v])=>[v,k]));
   async function ensureProfile() {
     if(!session)return;
-    const profile=await api("/rest/v1/usuarios_operadores?select=id_operador&limit=1");
+    const profile=await api("/rest/v1/usuarios_operadores?select=id_operador,perfil_acesso&limit=1");
     if(!profile.length){
       await api("/rest/v1/usuarios_operadores","POST",{
         id_operador:session.user.id,nome_completo:"Operador demonstrativo",perfil_acesso:"recepcao"
       });
-    }
+      isDemo=false;
+    } else {isDemo=profile[0].perfil_acesso==="demonstracao";}
   }
   async function loadSaved() {
     if(!session)return;
@@ -465,6 +473,9 @@
     if(!err&&currentMode==="exame"&&exams.some(e=>e.protocol.toLowerCase()===protocol.toLowerCase()))err="O protocolo já existe.";
     if(err){$("formError").textContent=err;$("formError").classList.remove("hidden");return;}
     try {
+      if(session&&isDemo&&(appointments.length+exams.length)>=DEMO_LIMIT){
+        throw new Error("Limite de 10 registros atingido. Exclua uma consulta ou exame para liberar uma vaga.");
+      }
       if(currentMode==="consulta"){
         if(session) {
           await api("/rest/v1/agendamentos_consultas","POST",{
@@ -494,6 +505,20 @@
       notice(session?"Registro salvo no banco PostgreSQL com sucesso.":"Registro de demonstração criado (não persistente).");
     } catch(e){$("formError").textContent="Não foi possível salvar: "+e.message;$("formError").classList.remove("hidden");}
   }
+  async function deleteSaved(type,i) {
+    if(!session)return;
+    const isConsult=type==="consulta", item=(isConsult?appointments:exams)[i];
+    if(!item||!item.id)return;
+    const label=isConsult?"a consulta de "+item.name:"o exame "+item.protocol;
+    if(!window.confirm("Excluir definitivamente "+label+"? Essa ação libera uma vaga na conta DEMO."))return;
+    const table=isConsult?"agendamentos_consultas":"exames_preventivos";
+    const pk=isConsult?"id_agendamento":"id_exame";
+    try{
+      await api("/rest/v1/"+table+"?"+pk+"=eq."+encodeURIComponent(item.id),"DELETE");
+      await loadSaved();
+      notice("Registro fictício excluído. A vaga está disponível para novo cadastro.");
+    }catch(e){notice("Não foi possível excluir: "+e.message,true);}
+  }
   async function updateExam(i) {
     const e=exams[i];
     if(!e||e.status==="sent")return;
@@ -514,13 +539,14 @@
   $("tabConsulta").addEventListener("click",()=>setMode("consulta"));
   $("tabExame").addEventListener("click",()=>setMode("exame"));
   $("registrationForm").addEventListener("submit",submitForm);
-  $("examTableBody").addEventListener("click",e=>{const b=e.target.closest("[data-notify]");if(b)updateExam(Number(b.dataset.notify));});
+  $("examTableBody").addEventListener("click",e=>{const b=e.target.closest("[data-notify]");if(b)updateExam(Number(b.dataset.notify));const d=e.target.closest("[data-delete-exam]");if(d)deleteSaved("exame",Number(d.dataset.deleteExam));});
+  $("appointmentTableBody").addEventListener("click",e=>{const d=e.target.closest("[data-delete-consult]");if(d)deleteSaved("consulta",Number(d.dataset.deleteConsult));});
   $("newExamButton").addEventListener("click",()=>{setMode("exame");showView("cadastro");});
   $("newAppointmentButton").addEventListener("click",()=>{setMode("consulta");showView("cadastro");});
   $("printButton").addEventListener("click",()=>window.print());
   $("loginButton").addEventListener("click",login);
-  $("signupButton").addEventListener("click",signup);
-  $("logoutOperator").addEventListener("click",()=>{session=null;$("loginButton").classList.remove("hidden");$("logoutOperator").classList.add("hidden");location.reload();});
+  // Cadastro público desabilitado na interface: conta DEMO é provisionada pelo administrador.
+  $("logoutOperator").addEventListener("click",()=>{session=null;isDemo=false;$("loginButton").classList.remove("hidden");$("logoutOperator").classList.add("hidden");location.reload();});
   $("logoutButton").addEventListener("click",()=>{if(session)$("logoutOperator").click();else notice("Modo de demonstração: nenhuma sessão está aberta.");});
   setMode("consulta");render();
 })();
