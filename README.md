@@ -24,7 +24,7 @@ O avaliador pode explorar a versão online **sem cadastro ou login**: painel, ca
 
 O login é necessário **apenas para testar a modalidade com persistência no banco**; não é necessário para visualizar o projeto. A conta compartilhada DEMO tem limite de **10 registros simultâneos**, somando consultas e exames: ao chegar a 10, o avaliador precisa **excluir um registro fictício** para liberar espaço. O limite é aplicado por um trigger no **PostgreSQL**, inclusive contra tentativas de contornar o navegador. Mesmo com login, o sistema **não deve receber dados reais**.
 
-**Atenção:** a conta DEMO deve ser criada e confirmada no **Supabase Auth** pelo responsável antes do primeiro acesso. O projeto não publica senhas no GitHub. A criação livre de contas foi ocultada na interface, mas o bloqueio de cadastro diretamente na API de autenticação depende de desabilitar novos cadastros no painel Supabase Auth.
+**Conta DEMO ativada (17/11/2026):** login `avaliador.ubs.caic@example.com`, com email confirmado no **Supabase Auth** e perfil `demonstracao` associado no PostgreSQL. **Senha:** fornecida separadamente pelo responsável pelo projeto — **nunca publicada neste repositório público**. A interface foi publicada na Vercel, mas a jornada de login/persistência ainda requer validação prática. A criação livre de contas foi ocultada na interface; o bloqueio de novas inscrições diretamente na API exige desabilitar o signup no painel Supabase Auth.
 
 ## 1. Baixar e executar a versão de teste local
 
