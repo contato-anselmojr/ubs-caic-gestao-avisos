@@ -1,0 +1,28 @@
+name: Monitoramento de disponibilidade - UBS CAIC
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/monitoramento.yml'
+  schedule:
+    - cron: '*/15 * * * *'
+
+permissions:
+  contents: read
+
+jobs:
+  verificar-disponibilidade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Verificar endpoint de saude e conexao ao PostgreSQL
+        env:
+          HEALTH_URL: https://vxaxhuxisigohsojsyct.supabase.co/functions/v1/ubs-caic-demo/health
+        run: |
+          set -euo pipefail
+          resposta=$(curl --fail-with-body --silent --show-error --location --retry 2 --max-time 30 "$HEALTH_URL")
+          echo "Resposta do monitor: $resposta"
+          echo "$resposta" | grep -q '"status":"ok"'
+          echo "$resposta" | grep -q '"database":"reachable"'
+          echo "Monitoramento: UP - funcao e PostgreSQL acessiveis"
