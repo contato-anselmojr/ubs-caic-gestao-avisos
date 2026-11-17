@@ -6,7 +6,7 @@ Permitir que professor e interessados testem a **persistência fictícia** no Su
 
 **URL:** https://ubs-caic-gestao-avisos.vercel.app  
 **Email de login da conta DEMO (criada e confirmada):** `avaliador.ubs.caic@example.com`  
-**Senha:** definida no painel Supabase Auth pelo responsável. **Não está publicada no GitHub**; deve ser comunicada diretamente aos avaliadores por um canal separado. A senha não dá acesso aos painéis GitHub, Vercel ou Supabase.
+**Senha pública da conta de avaliação:** `teste1234567` — divulgada a pedido do proprietário para permitir testes por qualquer interessado. **Não concede acesso administrativo** aos painéis GitHub, Vercel ou Supabase. **Qualquer pessoa que conheça essas credenciais poderá acessar e excluir os dados fictícios compartilhados**.
 
 **Estado de implantação (17/11/2026):** usuário Auth **criado, email confirmado e perfil `demonstracao` vinculado** à tabela `usuarios_operadores`. Triggers de limite aplicados ao PostgreSQL; interface com contador e exclusão publicada na Vercel. **O login real, a persistência após novo acesso e o bloqueio da 11ª inserção ainda precisam de teste de ponta a ponta no navegador.**
 
@@ -15,7 +15,7 @@ Permitir que professor e interessados testem a **persistência fictícia** no Su
 1. **Concluído:** o proprietário criou a conta em https://supabase.com/dashboard/project/vxaxhuxisigohsojsyct/auth/users.
 2. **Concluído:** o usuário está presente no Supabase Authentication → Users.
 3. **Concluído:** email `avaliador.ubs.caic@example.com` confirmado. A senha foi definida pelo proprietário e não é recuperável em texto simples.
-4. **Concluído:** conta salva. **A senha não deve ser enviada para este repositório.**
+4. **Concluído:** conta salva. O proprietário optou por publicar exclusivamente a senha da conta DEMO compartilhada; não utilizar essa senha em nenhuma conta pessoal ou administrativa.
 5. **Executado com sucesso no banco UBS CAIC:** o comando abaixo vinculou o perfil `demonstracao` à conta Auth:
 
 ```sql
@@ -53,7 +53,7 @@ O resultado deve conter exatamente uma linha com `perfil_acesso = demonstracao`.
 - O botão **Excluir** apaga o registro selecionado e libera uma vaga.
 - Os usuários compartilham a mesma conta, portanto **todos os avaliadores dessa conta podem ver e apagar os mesmos registros fictícios**. Não é adequado para dados reais nem para informações privadas.
 - O formulário de **criar conta** foi ocultado na interface, mas isso **não desabilita** o endpoint de inscrição do Supabase Auth. Para impedir criação de contas por fora do site, o proprietário deve **desabilitar novos cadastros** nas configurações de Supabase Authentication (verificar o nome atual do controle no painel). O login de contas existentes continua funcionando.
-- Não publique senhas em arquivos versionados ou no frontend. Altere a senha da DEMO periodicamente ou após a avaliação se houver uso indevido.
+- **Exceção deliberada para esta conta de demonstração:** a senha DEMO é pública para facilitar a avaliação, portanto não deve ser reutilizada. Troque-a ou desative a conta se houver abuso. **Nunca publique senhas de contas reais, administrativas, tokens ou chaves de API.**
 - O limite não substitui controle de requisições ou proteção contra abuso de API. O Supabase pode aplicar cotas e rate limits.
 
 ## Arquivos relacionados
@@ -64,3 +64,7 @@ O resultado deve conter exatamente uma linha com `perfil_acesso = demonstracao`.
 - `tests/test_demo_web.py`: verificação estrutural de recursos DEMO.
 
 **Privacidade:** dados de saúde reais, telefones verdadeiros e identificações reais não devem ser utilizados em nenhuma modalidade. Não há envio real de WhatsApp/SMS.
+
+## Funcionalidade de lembrete de SMS — proposta, não implementada
+
+A finalidade do projeto é reduzir faltas e esquecimentos. A proposta inclui lembretes de consultas/exames por SMS ou WhatsApp antes do horário agendado (por exemplo, 48 e 24 horas antes). **Não existe hoje integração real de envio nem tarefa automática agendada para mensagens.** Os controles de aviso da interface são demonstrativos e não representam mensagem entregue. Para implementar o disparo real seriam necessários serviço de mensagens, consentimento do destinatário, agendamento, auditoria e tratamento de falhas.
