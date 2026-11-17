@@ -24,7 +24,28 @@ O avaliador pode explorar a versão online **sem cadastro ou login**: painel, ca
 
 O login é necessário **apenas para testar a modalidade com persistência no banco**; não é necessário para visualizar o projeto. A conta compartilhada DEMO tem limite de **10 registros simultâneos**, somando consultas e exames: ao chegar a 10, o avaliador precisa **excluir um registro fictício** para liberar espaço. O limite é aplicado por um trigger no **PostgreSQL**, inclusive contra tentativas de contornar o navegador. Mesmo com login, o sistema **não deve receber dados reais**.
 
-**Conta DEMO ativada (17/11/2026):** login `avaliador.ubs.caic@example.com`, com email confirmado no **Supabase Auth** e perfil `demonstracao` associado no PostgreSQL. **Senha:** fornecida separadamente pelo responsável pelo projeto — **nunca publicada neste repositório público**. A interface foi publicada na Vercel, mas a jornada de login/persistência ainda requer validação prática. A criação livre de contas foi ocultada na interface; o bloqueio de novas inscrições diretamente na API exige desabilitar o signup no painel Supabase Auth.
+**Conta DEMO ativada (17/11/2026):** login `avaliador.ubs.caic@example.com`, com email confirmado no **Supabase Auth** e perfil `demonstracao` associado no PostgreSQL. **Senha pública de demonstração:** `teste1234567` — destinada exclusivamente a esta conta compartilhada, sem acesso administrativo. A interface foi publicada na Vercel, mas a jornada de login/persistência ainda requer validação prática. A criação livre de contas foi ocultada na interface; o bloqueio de novas inscrições diretamente na API exige desabilitar o signup no painel Supabase Auth.
+
+### Acesso público de avaliação
+
+| Campo | Informação |
+| --- | --- |
+| Site | https://ubs-caic-gestao-avisos.vercel.app |
+| Login | `avaliador.ubs.caic@example.com` |
+| Senha DEMO | `teste1234567` |
+| Permissão | Somente registros fictícios do sistema UBS CAIC |
+| Limite | 10 registros no total: consultas + exames |
+| Para liberar espaço | Excluir um registro já existente |
+
+**Atenção:** estas credenciais são intencionalmente públicas e compartilhadas, apenas para testes. Qualquer pessoa pode acessar e apagar os registros fictícios dessa conta. Não use dados reais, senhas reutilizadas ou informações privadas.
+
+### Lembretes por SMS/WhatsApp — escopo e estado real
+
+**Problema que o projeto pretende resolver:** faltas e esquecimentos de consultas e exames preventivos. **Solução proposta:** enviar lembretes antes da data agendada, como 48 e 24 horas antes, mediante consentimento e integração com um provedor de mensagens.
+
+**O que o MVP faz hoje:** cadastra e acompanha agendamentos fictícios e permite simular a marcação de avisos/alterações de status. **O que ainda não faz:** não envia SMS nem WhatsApp reais, não agenda disparos automáticos e não possui provedor de mensagens integrado. A simulação não deve ser confundida com notificação entregue ao paciente.
+
+A implementação futura exigirá fila de envio, agendador, provedor SMS/WhatsApp, autorização/consentimento do destinatário, logs de entrega, tratamento de falhas e cuidados com a LGPD.
 
 ## 1. Baixar e executar a versão de teste local
 
