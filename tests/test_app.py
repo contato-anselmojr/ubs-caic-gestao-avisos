@@ -49,6 +49,24 @@ class TestServidorUBS(unittest.TestCase):
             with self.subTest(secao=section_id):
                 self.assertIn(f'id="{section_id}"', body)
 
+    def test_cabecalhos_basicos_de_seguranca(self):
+        with urlopen(self.base_url + '/', timeout=5) as response:
+            self.assertEqual(response.headers['X-Content-Type-Options'], 'nosniff')
+            self.assertEqual(response.headers['X-Frame-Options'], 'DENY')
+            self.assertEqual(response.headers['Referrer-Policy'], 'no-referrer')
+            self.assertEqual(
+                response.headers['Permissions-Policy'],
+                'camera=(), microphone=(), geolocation=()',
+            )
+
+    def test_pagina_nao_deve_ser_armazenada_em_cache(self):
+        with urlopen(self.base_url + '/', timeout=5) as response:
+            self.assertEqual(response.headers['Cache-Control'], 'no-store')
+            self.assertEqual(
+                int(response.headers['Content-Length']),
+                len(response.read()),
+            )
+
     def test_contador_consultas_nao_usa_valor_fixo(self):
         with urlopen(self.base_url + '/', timeout=5) as response:
             body = response.read().decode('utf-8')
