@@ -1,5 +1,7 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
+from http_headers import send_html_headers
+
 PAGE = r'''<!doctype html>
 <html lang="pt-BR">
 <head>
@@ -494,9 +496,7 @@ class UBSHandler(BaseHTTPRequestHandler):
 
         body = PAGE.encode("utf-8")
         self.send_response(200)
-        self.send_header("Content-Type", "text/html; charset=utf-8")
-        self.send_header("Content-Length", str(len(body)))
-        self.send_header("Cache-Control", "no-store")
+        send_html_headers(self, len(body))
         self.end_headers()
         self.wfile.write(body)
 
