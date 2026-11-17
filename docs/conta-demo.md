@@ -8,7 +8,7 @@ Permitir que professor e interessados testem a **persistência fictícia** no Su
 **Email de login da conta DEMO (criada e confirmada):** `avaliador.ubs.caic@example.com`  
 **Senha pública da conta de avaliação:** `teste1234567` — divulgada a pedido do proprietário para permitir testes por qualquer interessado. **Não concede acesso administrativo** aos painéis GitHub, Vercel ou Supabase. **Qualquer pessoa que conheça essas credenciais poderá acessar e excluir os dados fictícios compartilhados**.
 
-**Estado de implantação (17/11/2026):** usuário Auth **criado, email confirmado e perfil `demonstracao` vinculado** à tabela `usuarios_operadores`. Triggers de limite aplicados ao PostgreSQL; interface com contador e exclusão publicada na Vercel. **O login real, a persistência após novo acesso e o bloqueio da 11ª inserção ainda precisam de teste de ponta a ponta no navegador.**
+**Estado de implantação (17/11/2026):** usuário Auth **criado, email confirmado e perfil `demonstracao` vinculado** à tabela `usuarios_operadores`. Triggers de limite aplicados ao PostgreSQL; interface com contador e exclusão publicada na Vercel. **O acesso autenticado e o contador de uso da conta foram observados na interface; o PostgreSQL continha 1 consulta e 1 exame fictícios no levantamento de 17/11/2026.** Não está documentado ensaio formal completo de reentrada após atualização ou do bloqueio da 11ª inclusão.
 
 ## Provisionamento realizado (para auditoria e reprodução)
 
@@ -40,8 +40,8 @@ where u.email = 'avaliador.ubs.caic@example.com';
 
 O resultado deve conter exatamente uma linha com `perfil_acesso = demonstracao`.
 
-7. **Pendente de validação prática:** entre na Vercel com esse email e a senha escolhida. O site deve mostrar o contador **Conta DEMO: N/10 registros utilizados**.
-8. Crie uma consulta fictícia e um exame fictício; recarregue a página, **entre novamente** e confirme que os registros reaparecem. Teste exclusão e o contador.
+7. **Acesso autenticado observado em 17/11/2026:** a interface da Vercel mostrou a conta DEMO e o contador **2/10 registros utilizados**. A quantidade muda conforme os avaliadores criam ou excluem dados fictícios.
+8. **Roteiro recomendado ao avaliador:** crie uma consulta fictícia e um exame fictício; recarregue a página, **entre novamente** e confirme que os registros reaparecem. Teste exclusão e o contador. A sessão não é restaurada automaticamente ao recarregar.
 9. Teste o limite: ao chegar a 10 registros somados, uma 11ª tentativa deve falhar. Após excluir um registro, o próximo cadastro deve ser permitido.
 
 ## Regras de segurança
@@ -65,6 +65,8 @@ O resultado deve conter exatamente uma linha com `perfil_acesso = demonstracao`.
 
 **Privacidade:** dados de saúde reais, telefones verdadeiros e identificações reais não devem ser utilizados em nenhuma modalidade. Não há envio real de WhatsApp/SMS.
 
-## Funcionalidade de lembrete de SMS — proposta, não implementada
+## Lembretes e avisos simulados — implementação ativa, sem SMS real
 
-A finalidade do projeto é reduzir faltas e esquecimentos. A proposta inclui lembretes de consultas/exames por SMS ou WhatsApp antes do horário agendado (por exemplo, 48 e 24 horas antes). **Não existe hoje integração real de envio nem tarefa automática agendada para mensagens.** Os controles de aviso da interface são demonstrativos e não representam mensagem entregue. Para implementar o disparo real seriam necessários serviço de mensagens, consentimento do destinatário, agendamento, auditoria e tratamento de falhas.
+No modo autenticado, o gatilho `trg_programar_lembretes_demo` agenda eventos **48 e 24 horas antes** de consultas futuras elegíveis na tabela `public.notificacoes_demo`. O job ativo `ubs-caic-lembretes-simulados` do **Supabase Cron/pg_cron** processa os eventos vencidos **a cada minuto**, mesmo com a página fechada. A Central de Notificações também permite registrar manualmente **avisos simulados** de resultados marcados como disponíveis na aba Fila e Alertas, com histórico fictício e sem divulgar conteúdo clínico. A migração correspondente é `db/notificacoes_demo.sql`.
+
+**Não há integração com operadora de SMS ou API WhatsApp, envio ao paciente, confirmação de entrega ou acompanhamento clínico real.** Para envio efetivo seriam necessários serviço autorizado, consentimento ou outra base legal aplicável, governança de dados, auditoria e tratamento de falhas. Não use dados pessoais verdadeiros neste MVP.

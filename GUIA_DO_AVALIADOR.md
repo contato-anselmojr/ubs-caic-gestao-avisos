@@ -12,7 +12,7 @@ Abra esse endereço no navegador. **Não é necessário fazer login para avaliar
 2. Acesse **Cadastro Rápido** e simule uma consulta com nome e telefone fictícios.
 3. Verifique a validação de campos e o impedimento de data anterior à atual.
 4. Simule o cadastro de um exame preventivo com protocolo fictício.
-5. Acesse **Fila e Alertas**, visualize as informações simuladas e registre um aviso demonstrativo.
+5. Acesse **Fila e Alertas**, marque um exame fictício como disponível e, na aba **Notificações**, registre o aviso manual simulado. Nenhuma mensagem é entregue a um telefone.
 6. Recarregue a página para observar que o **modo visitante não persiste registros**.
 
 Neste ambiente, os dados de visitantes ficam em **arrays JavaScript no navegador**. O uso do banco real exige conta autenticada e não faz parte do teste público sem login.
@@ -38,13 +38,13 @@ Se o script informar que a porta 5000 está ocupada, feche a instância anterior
 A interface publicada na Vercel contém um modo autenticado integrado ao **Supabase Auth e PostgreSQL**. A conta de avaliação é criada pelo responsável, não pelo visitante.
 
 1. Abra https://ubs-caic-gestao-avisos.vercel.app.
-2. Use o email de demonstração `avaliador.ubs.caic@example.com` e a **senha fornecida separadamente pelo responsável pelo projeto**. Clique em **Entrar — modo persistente**.
+2. Use o email de demonstração `avaliador.ubs.caic@example.com` e a senha pública de teste `teste1234567`. Clique em **Entrar — modo persistente**. Nunca use dados próprios, senha pessoal ou informações clínicas.
 3. Confirme que aparece o contador **Conta DEMO: 0/10 registros utilizados** (ou o número atual).
 4. Cadastre consultas e exames com dados fictícios. O total máximo é de **10 registros somados**, independentemente do tipo.
 5. Ao atingir 10, o sistema impede novos registros. Use **Excluir** em uma consulta ou exame para liberar uma vaga.
 6. Recarregue a página, **entre novamente** e confirme que os registros cadastrados continuam disponíveis no banco.
 
-**Estado dessa opção:** o limite já foi instalado no banco e a interface foi preparada, mas **o responsável precisa criar a identidade de autenticação no Supabase e testar o fluxo de ponta a ponta**. O acesso compartilhado permite que diferentes avaliadores vejam e excluam os mesmos dados fictícios. Não utilizar informações reais.
+**Estado dessa opção em 17/11/2026:** a identidade DEMO foi criada e confirmada no Supabase Auth, o perfil `demonstracao` está associado e foi observado acesso autenticado com contador de 2/10 registros. O banco apresentava 1 consulta e 1 exame fictícios, além de 1 aviso manual simulado. Ainda não há comprovação de ensaio formal de todos os cenários (inclusive a 11ª inserção e a reentrada após atualização). O acesso compartilhado permite que diferentes avaliadores vejam e excluam os mesmos dados fictícios. Não utilizar informações reais.
 
 ## Código-fonte, hospedagem e banco de dados
 
@@ -52,7 +52,8 @@ A interface publicada na Vercel contém um modo autenticado integrado ao **Supab
 - **Vercel:** hospedagem estática da interface final por HTTPS, associada ao GitHub; versão online em https://ubs-caic-gestao-avisos.vercel.app.
 - **Supabase PostgreSQL:** armazenamento da modalidade autenticada, com Supabase Auth e Row Level Security (RLS).
 - **Python:** servidor HTTP local da demonstração baixável, sem conexão com banco de dados.
-- **GitHub Actions:** testes automatizados e monitoramento programado da disponibilidade do site e do banco.
+- **Supabase Cron / PostgreSQL:** programação e processamento de lembretes **simulados** de consultas 48 e 24 horas antes, a cada minuto, em contas autenticadas.
+- **GitHub Actions:** testes automatizados e monitoramento de disponibilidade do site e do endpoint de saúde do Supabase (agendamento a cada 15 minutos, sujeito a atrasos).
 
 As modalidades gratuitas desses serviços foram escolhidas por serem adequadas ao escopo acadêmico e reduzirem os custos de operação; os provedores podem aplicar limites de uso.
 
@@ -60,6 +61,10 @@ As modalidades gratuitas desses serviços foram escolhidas por serem adequadas a
 
 - **Deploy:** captura de tela da versão **Vercel**, com a barra de endereço e URL completa visíveis.
 - **Monitoramento:** captura de uma execução **Success** em https://github.com/contato-anselmojr/ubs-caic-gestao-avisos/actions, preferencialmente mostrando as verificações da Vercel e do Supabase.
+
+## O que a avaliação comprova
+
+Os testes públicos e os registros fictícios permitem demonstrar a viabilidade técnica do MVP. **Não comprovam** redução real de faltas, reaproveitamento de vagas, diminuição de deslocamentos, envio de SMS/WhatsApp ou validação institucional. O autor é ex-ACS da unidade de referência; sua experiência fundamenta o problema, mas não substitui avaliação por um parceiro externo independente.
 
 ## Privacidade e limites
 

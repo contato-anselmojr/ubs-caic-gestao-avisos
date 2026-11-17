@@ -13,14 +13,15 @@ A implantação anterior no Supabase Edge Functions foi preservada como alternat
 - **GitHub:** repositório público, versionamento e testes automáticos.
 - **Vercel:** hospedagem estática gratuita no escopo do projeto (HTML5, CSS3 e JavaScript), HTTPS e deploy pelo GitHub.
 - **Supabase:** PostgreSQL 17 gerenciado, projeto `ubs-caic-gestao-avisos` na região `sa-east-1`, independente de outras aplicações.
-- **Banco PostgreSQL:** tabelas `usuarios_operadores`, `agendamentos_consultas` e `exames_preventivos`, com Row Level Security (RLS) habilitado.
+- **Banco PostgreSQL:** tabelas `usuarios_operadores`, `agendamentos_consultas`, `exames_preventivos` e `notificacoes_demo`, com Row Level Security (RLS) habilitado.
+- **Supabase Cron/pg_cron:** job ativo a cada minuto para processar eventos de lembretes simulados das consultas.
 - **Python:** versão local baixável com `app.py` e `iniciar_teste.py`, sem usar banco de dados.
 
 Esses provedores oferecem modalidades gratuitas utilizadas no contexto do MVP, sujeitas a cotas e eventuais mudanças de política.
 
 ## Operação dos modos de teste
 
-O modo público da Vercel funciona **sem login** e utiliza informações fictícias temporárias, sem gravar no Supabase. O modo autenticado contém integração com Supabase Auth e Data API para persistência em PostgreSQL, mas **o fluxo completo de cadastro/login e escrita ainda não foi homologado em teste de ponta a ponta**. Nenhum dado real de pacientes deve ser inserido em qualquer modalidade.
+O modo público da Vercel funciona **sem login** e utiliza informações fictícias temporárias, sem gravar no Supabase. A conta DEMO do modo autenticado foi criada, confirmada e observada em uso na interface em 17/11/2026; o PostgreSQL registrava 1 consulta, 1 exame e 1 aviso manual simulado naquele levantamento. O modo autenticado contém operações de leitura, escrita, atualização e exclusão por Supabase Auth/Data API com RLS, além de programação de lembretes demonstrativos. **A validação observada não equivale a ensaio formal completo de todos os cenários**, como reentrada depois de atualizar a página e bloqueio da 11ª inclusão. Nenhum dado real de pacientes deve ser inserido.
 
 ## Monitoramento de disponibilidade
 
@@ -32,12 +33,16 @@ O workflow `.github/workflows/monitoramento.yml` executa verificações automát
 
 Uma execução em **Success** indica que as verificações passaram naquele instante; uma execução **Failure** sinaliza a necessidade de investigar indisponibilidade ou erro de conteúdo. O agendamento do GitHub Actions pode sofrer atrasos; não foi implementado alerta externo dedicado por SMS ou email.
 
-**Evidência técnica:** https://github.com/contato-anselmojr/ubs-caic-gestao-avisos/actions/runs/44143278860 — execução nº 10, concluída com `Success` e verificação da Vercel.
+**Evidência técnica:** https://github.com/contato-anselmojr/ubs-caic-gestao-avisos/actions/runs/44149438168 — execução nº 16, concluída com `Success`, incluindo verificações da Vercel, da Edge Function e do endpoint de saúde do Supabase. Esse monitoramento confirma disponibilidade pontual, **não** o êxito de notificações reais ou a redução de faltas de pacientes.
 
 ## Capturas de tela necessárias para a entrega
 
 1. **Deploy:** navegador maximizado com a interface da UBS CAIC e barra de endereço contendo `https://ubs-caic-gestao-avisos.vercel.app`.
 2. **Monitoramento:** GitHub Actions com o job `verificar-disponibilidade` em `Success` e os passos de checagem visíveis.
+
+## Indicadores e conexão com o ODS 3
+
+O planejamento relaciona o MVP à redução do absenteísmo, ao melhor aproveitamento de vagas e à diminuição de deslocamentos para buscar resultados de exames preventivos (**ODS 3 — Saúde e Bem-Estar; metas 3.7 e 3.8**). As métricas técnicas disponíveis no levantamento de 17/11/2026 foram **1 consulta fictícia, 1 exame fictício e 1 aviso manual simulado**. Não há dados de pacientes reais que permitam comprovar redução de faltas, realocação de consultas ou economia de viagens. A experiência do autor como ex-ACS fundamentou o diagnóstico; ela não se confunde com avaliação independente do parceiro externo.
 
 ## Limites técnicos, éticos e operacionais
 

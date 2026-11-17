@@ -2,9 +2,10 @@
 
 **Projeto acadêmico de Projeto de Software** — Tecnologia em Análise e Desenvolvimento de Sistemas (3º semestre).  
 **Unidade de referência do estudo:** UBS Sueli Dutra Alves (CAIC), Paranaguá/PR.  
-**ODS relacionado:** ODS 3 — Saúde e Bem-Estar.
+**ODS relacionado:** ODS 3 — Saúde e Bem-Estar, com atenção às metas 3.7 e 3.8.
+**Origem da demanda:** problema observado por Anselmo Martins Alves Junior, autor do projeto e ex-Agente Comunitário de Saúde (ACS) da unidade. Sua experiência incluiu apoio à recepção de exames e coletas, entrega de resultados, arquivo, almoxarifado e distribuição de insumos à população. A identificação do problema pelo próprio autor não deve ser confundida com validação independente ou endosso institucional.
 
-> **Atenção:** este é um **MVP acadêmico demonstrativo**, não um sistema oficial ou homologado da UBS. Não cadastre pacientes, contatos, resultados de exames ou outros dados reais de saúde. Utilize exclusivamente informações fictícias.
+> **Atenção:** este é um **MVP acadêmico demonstrativo**, não um sistema oficial, implantado ou homologado pela UBS. Não cadastre pacientes, contatos, resultados de exames ou outros dados reais de saúde. Utilize exclusivamente informações fictícias. A experiência prévia do autor na unidade não representa autorização de uso clínico.
 
 ## Como avaliar o projeto
 
@@ -14,7 +15,7 @@ Existem **três maneiras** de avaliar as telas e os fluxos, com objetivos difere
 | --- | --- | --- | --- |
 | **1. Teste local (download + Python)** | Baixar este repositório e executar `iniciar_teste.py` | **Não** | **Não**. Apenas arrays temporários no navegador. |
 | **2. Versão online — demonstração** | [Abrir a aplicação na Vercel](https://ubs-caic-gestao-avisos.vercel.app) | **Não** | **Não**. Os dados de visitantes são demonstrativos e temporários. |
-| **3. Versão online — conta DEMO compartilhada** | Mesmo endereço da Vercel; entrar com credenciais de avaliação fornecidas pelo responsável | **Sim, conta de demonstração** | **Previsto: sim**, com até **10 registros somados (consultas + exames)**, protegidos por RLS. A autenticação e persistência ainda exigem teste real após o provisionamento da conta. |
+| **3. Versão online — conta DEMO compartilhada** | Mesmo endereço da Vercel; entrar com credenciais de avaliação fornecidas pelo responsável | **Sim, conta de demonstração** | **Sim, no PostgreSQL**, com até **10 registros simultâneos somados (consultas + exames)**, protegidos por RLS. O login DEMO e registros fictícios já foram observados; o ensaio completo do bloqueio da 11ª inclusão ainda não foi documentado. |
 
 O **link público final do trabalho acadêmico** é:
 
@@ -24,7 +25,7 @@ O avaliador pode explorar a versão online **sem cadastro ou login**: painel, ca
 
 O login é necessário **apenas para testar a modalidade com persistência no banco**; não é necessário para visualizar o projeto. A conta compartilhada DEMO tem limite de **10 registros simultâneos**, somando consultas e exames: ao chegar a 10, o avaliador precisa **excluir um registro fictício** para liberar espaço. O limite é aplicado por um trigger no **PostgreSQL**, inclusive contra tentativas de contornar o navegador. Mesmo com login, o sistema **não deve receber dados reais**.
 
-**Conta DEMO ativada (17/11/2026):** login `avaliador.ubs.caic@example.com`, com email confirmado no **Supabase Auth** e perfil `demonstracao` associado no PostgreSQL. **Senha pública de demonstração:** `teste1234567` — destinada exclusivamente a esta conta compartilhada, sem acesso administrativo. A interface foi publicada na Vercel, mas a jornada de login/persistência ainda requer validação prática. A criação livre de contas foi ocultada na interface; o bloqueio de novas inscrições diretamente na API exige desabilitar o signup no painel Supabase Auth.
+**Conta DEMO ativada e utilizada em avaliação técnica (17/11/2026):** login `avaliador.ubs.caic@example.com`, com email confirmado no **Supabase Auth** e perfil `demonstracao` associado no PostgreSQL. **Senha pública de demonstração:** `teste1234567` — exclusiva desta conta compartilhada, sem acesso administrativo. A interface autenticada e o contador de registros foram observados; a consulta ao banco confirmou 1 consulta, 1 exame e 1 aviso manual simulado naquele momento. Esses números são uma fotografia do teste, não métricas estáveis nem evidência de atendimento real. O fluxo completo de reentrada/persistência e o bloqueio da 11ª inclusão não possuem ensaio formal documentado. A criação livre de contas foi ocultada na interface; isso não equivale, por si só, a bloquear inscrições diretamente na API Supabase Auth.
 
 ### Acesso público de avaliação
 
@@ -106,7 +107,7 @@ O navegador será aberto automaticamente quando possível. Caso contrário, visi
 
 - **Sem login:** a interface funciona em modo público demonstrativo, com dados fictícios em memória. O avaliador pode navegar e testar os formulários sem fazer cadastro.
 - **Com a conta DEMO compartilhada:** o frontend utiliza o **Supabase Auth** para autenticação e a **Data API do Supabase PostgreSQL** para gravar, consultar e **excluir** registros permitidos pelas políticas RLS. O limite de **10 registros** é aplicado no banco, com contador na interface.
-- **Persistência autenticada:** há código para cadastro, leitura, atualização de exame e exclusão de consultas/exames, mas **a jornada completa de login e persistência ainda não foi homologada**. A sessão de login não é mantida ao atualizar a página; entre novamente para consultar registros persistidos. O envio de mensagens WhatsApp/SMS não está implementado.
+- **Persistência autenticada:** o login DEMO, a leitura dos registros e a presença de dados fictícios no PostgreSQL foram observados. A interface também implementa cadastro, alteração de disponibilidade de exames, registro de avisos simulados e exclusão. **Não há homologação clínica nem teste formal completo do fluxo de reentrada ou da 11ª inclusão.** A sessão de login não é mantida ao atualizar a página; entre novamente para consultar os registros persistidos. O envio de mensagens WhatsApp/SMS não está implementado.
 - As telas online são um **MVP demonstrativo**. Nenhuma modalidade constitui autorização para uso assistencial real.
 
 ## 3. Tecnologias e arquitetura
@@ -147,6 +148,7 @@ O GitHub permite auditoria do código-fonte. A Vercel publica a interface e faz 
 ├── vercel.json                   # Cabeçalhos de segurança na Vercel
 ├── db/schema_supabase.sql        # Estrutura PostgreSQL e políticas RLS
 ├── db/limite_conta_demo.sql      # Trigger de limite de 10 registros da conta DEMO
+├── db/notificacoes_demo.sql      # Eventos de notificação simulada e Supabase Cron
 ├── supabase/functions/           # Implantação alternativa em Edge Functions
 ├── tests/                        # Testes automatizados de Python
 └── .github/workflows/            # Testes e monitoramento
@@ -163,6 +165,10 @@ python -m unittest discover -s tests -v
 O workflow [Monitoramento de disponibilidade — UBS CAIC](https://github.com/contato-anselmojr/ubs-caic-gestao-avisos/actions) consulta periodicamente (agendamento **a cada 15 minutos**) a URL final na Vercel, o endpoint de saúde da Edge Function e a conectividade com PostgreSQL. As execuções bem-sucedidas aparecem como `Success` e as falhas como `Failure`. As verificações podem sofrer atrasos do agendador do GitHub Actions.
 
 **Não há** integração real de WhatsApp/SMS, fila FIFO automática, acesso a sistemas oficiais do SUS, resultados clínicos ou autorização institucional para implantação na UBS. O protótipo é acadêmico e trabalha **exclusivamente com informações fictícias**.
+
+### Resultados e impacto — delimitação acadêmica
+
+**Referência de medição em 17/11/2026:** 1 consulta fictícia, 1 exame fictício e 1 aviso manual simulado no PostgreSQL. O workflow de monitoramento verifica a disponibilidade técnica; seus resultados não medem faltas em consultas, realocação de vagas ou deslocamentos de pacientes. A meta social é contribuir futuramente para reduzir absenteísmo e visitas desnecessárias à UBS, em relação ao **ODS 3 (metas 3.7 e 3.8)**, mas **não foi medido impacto clínico ou comunitário real**. Também não há evidência documentada de duas rodadas concluídas de validação externa ou de termo de feedback assinado por representante independente. A entrega consiste no MVP acadêmico funcional e em seus testes demonstrativos, sem integração com o SUS.
 
 ### Documentação complementar
 
