@@ -177,12 +177,12 @@ PAGE = r'''<!doctype html>
       <div class="stats">
         <article class="card stat-card">
           <div class="stat-top"><span>Consultas monitoradas (48h)</span><span class="stat-icon">▦</span></div>
-          <div class="stat-number" id="countConsultas">12</div>
+          <div class="stat-number" id="countConsultas">2</div>
           <p class="stat-description">Registros acompanhados para lembretes de consulta.</p>
         </article>
         <article class="card stat-card red">
           <div class="stat-top"><span>Vagas canceladas (realocar)</span><span class="stat-icon">⚠</span></div>
-          <div class="stat-number" id="countCanceladas">2</div>
+          <div class="stat-number" id="countCanceladas">1</div>
           <p class="stat-description">Pacientes desmarcaram; vagas disponíveis para encaixe.</p>
         </article>
         <article class="card stat-card green">
@@ -397,7 +397,7 @@ PAGE = r'''<!doctype html>
 
       document.getElementById('countExames').textContent = exams.filter(exam => exam.status === 'ready').length;
       document.getElementById('countCanceladas').textContent = appointments.filter(item => item.status === 'cancelled').length;
-      document.getElementById('countConsultas').textContent = 12 + Math.max(0, appointments.length - 2);
+      document.getElementById('countConsultas').textContent = appointments.length;
     }
 
     document.getElementById('examTableBody').addEventListener('click', event => {
