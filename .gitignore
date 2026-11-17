@@ -1,0 +1,23 @@
+# Ambientes virtuais e segredos
+venv/
+.venv/
+.env
+.env.*
+!.env.example
+
+# Python e testes
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Banco de dados local
+*.sqlite3
+*.db
+
+# Editores e sistema operacional
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
