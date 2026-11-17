@@ -28,3 +28,13 @@ jobs:
           echo "$resposta" | grep -q '"status":"ok"'
           echo "$resposta" | grep -q '"database":"reachable"'
           echo "Monitoramento: UP - funcao e PostgreSQL acessiveis"
+      - name: Verificar interface HTML publica
+        env:
+          PAGE_URL: https://vxaxhuxisigohsojsyct.supabase.co/functions/v1/ubs-caic-demo
+        run: |
+          set -euo pipefail
+          curl --fail-with-body --silent --show-error --location --retry 2 --max-time 30 "$PAGE_URL" -o /tmp/ubs-caic.html
+          grep -q "Painel Resumo do Turno" /tmp/ubs-caic.html
+          grep -q "Cadastro Rápido no Balcão" /tmp/ubs-caic.html
+          grep -q "Acesso de demonstração / Banco PostgreSQL" /tmp/ubs-caic.html
+          echo "Interface HTML publicada: UP"
