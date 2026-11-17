@@ -441,7 +441,7 @@
       await ensureProfile();
       await loadSaved();
       notice("Login confirmado. As próximas alterações serão gravadas no PostgreSQL.");
-    } catch(e){notice("Não foi possível entrar: "+e.message,true);}
+    } catch(e){session=null;isDemo=false;$("loginButton").classList.remove("hidden");$("logoutOperator").classList.add("hidden");render();notice("Não foi possível entrar: "+e.message,true);}
   }
   async function signup() {
     const email=$("authEmail").value.trim(),password=$("authPassword").value;
