@@ -14,7 +14,7 @@ Existem **três maneiras** de avaliar as telas e os fluxos, com objetivos difere
 | --- | --- | --- | --- |
 | **1. Teste local (download + Python)** | Baixar este repositório e executar `iniciar_teste.py` | **Não** | **Não**. Apenas arrays temporários no navegador. |
 | **2. Versão online — demonstração** | [Abrir a aplicação na Vercel](https://ubs-caic-gestao-avisos.vercel.app) | **Não** | **Não**. Os dados de visitantes são demonstrativos e temporários. |
-| **3. Versão online — modo autenticado** | Mesmo endereço da Vercel; criar conta de teste e entrar | **Sim** | **Previsto: sim**, por operações no PostgreSQL do Supabase, protegidas por RLS. O fluxo completo de cadastro/login e gravação ainda requer validação prática com uma conta de testes. |
+| **3. Versão online — conta DEMO compartilhada** | Mesmo endereço da Vercel; entrar com credenciais de avaliação fornecidas pelo responsável | **Sim, conta de demonstração** | **Previsto: sim**, com até **10 registros somados (consultas + exames)**, protegidos por RLS. A autenticação e persistência ainda exigem teste real após o provisionamento da conta. |
 
 O **link público final do trabalho acadêmico** é:
 
@@ -22,7 +22,9 @@ O **link público final do trabalho acadêmico** é:
 
 O avaliador pode explorar a versão online **sem cadastro ou login**: painel, cadastro demonstrativo de consultas, protocolos de exames e fila/alertas. Os dados inseridos no modo visitante não são encaminhados ao Supabase; somem ao recarregar a página.
 
-O cadastro/login é necessário **apenas para testar a modalidade com persistência no banco**; não é necessário para visualizar o projeto. Mesmo com login, a aplicação continua sendo uma demonstração acadêmica e **não deve receber dados reais**.
+O login é necessário **apenas para testar a modalidade com persistência no banco**; não é necessário para visualizar o projeto. A conta compartilhada DEMO tem limite de **10 registros simultâneos**, somando consultas e exames: ao chegar a 10, o avaliador precisa **excluir um registro fictício** para liberar espaço. O limite é aplicado por um trigger no **PostgreSQL**, inclusive contra tentativas de contornar o navegador. Mesmo com login, o sistema **não deve receber dados reais**.
+
+**Atenção:** a conta DEMO deve ser criada e confirmada no **Supabase Auth** pelo responsável antes do primeiro acesso. O projeto não publica senhas no GitHub. A criação livre de contas foi ocultada na interface, mas o bloqueio de cadastro diretamente na API de autenticação depende de desabilitar novos cadastros no painel Supabase Auth.
 
 ## 1. Baixar e executar a versão de teste local
 
@@ -77,8 +79,8 @@ O navegador será aberto automaticamente quando possível. Caso contrário, visi
 **Link:** https://ubs-caic-gestao-avisos.vercel.app
 
 - **Sem login:** a interface funciona em modo público demonstrativo, com dados fictícios em memória. O avaliador pode navegar e testar os formulários sem fazer cadastro.
-- **Com login/cadastro de uma conta de testes:** o frontend utiliza o **Supabase Auth** para autenticação e a **Data API do Supabase PostgreSQL** para gravar e consultar registros permitidos pelas políticas RLS.
-- **Persistência autenticada:** há código para cadastramento e leitura de consultas e exames, mas **a jornada completa de login, confirmação de email, gravação e leitura após atualização ainda não foi homologada**. O envio de mensagens WhatsApp/SMS não está implementado.
+- **Com a conta DEMO compartilhada:** o frontend utiliza o **Supabase Auth** para autenticação e a **Data API do Supabase PostgreSQL** para gravar, consultar e **excluir** registros permitidos pelas políticas RLS. O limite de **10 registros** é aplicado no banco, com contador na interface.
+- **Persistência autenticada:** há código para cadastro, leitura, atualização de exame e exclusão de consultas/exames, mas **a jornada completa de login e persistência ainda não foi homologada**. A sessão de login não é mantida ao atualizar a página; entre novamente para consultar registros persistidos. O envio de mensagens WhatsApp/SMS não está implementado.
 - As telas online são um **MVP demonstrativo**. Nenhuma modalidade constitui autorização para uso assistencial real.
 
 ## 3. Tecnologias e arquitetura
@@ -118,6 +120,7 @@ O GitHub permite auditoria do código-fonte. A Vercel publica a interface e faz 
 ├── index.html                    # Interface da versão Vercel
 ├── vercel.json                   # Cabeçalhos de segurança na Vercel
 ├── db/schema_supabase.sql        # Estrutura PostgreSQL e políticas RLS
+├── db/limite_conta_demo.sql      # Trigger de limite de 10 registros da conta DEMO
 ├── supabase/functions/           # Implantação alternativa em Edge Functions
 ├── tests/                        # Testes automatizados de Python
 └── .github/workflows/            # Testes e monitoramento
@@ -138,6 +141,7 @@ O workflow [Monitoramento de disponibilidade — UBS CAIC](https://github.com/co
 ### Documentação complementar
 
 - [Guia do avaliador](GUIA_DO_AVALIADOR.md)
+- [Configuração da conta DEMO](docs/conta-demo.md)
 - [Arquitetura e decisão Supabase](docs/ADR-001-supabase-postgresql.md)
 - [Deploy e monitoramento](docs/deploy-e-monitoramento.md)
 - [Deploy pela Vercel](docs/deploy-vercel.md)
