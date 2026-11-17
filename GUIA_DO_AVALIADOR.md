@@ -33,16 +33,18 @@ Neste ambiente, os dados de visitantes ficam em **arrays JavaScript no navegador
 
 Se o script informar que a porta 5000 está ocupada, feche a instância anterior ou outro programa que esteja utilizando essa porta. Se o computador não reconhecer o comando `python`, instale o Python 3 e configure o PATH.
 
-## Opção C — Testar cadastro e persistência (modo autenticado online)
+## Opção C — Testar persistência com a conta DEMO compartilhada
 
-A interface publicada na Vercel também contém um modo autenticado que **integra Supabase Auth e PostgreSQL**.
+A interface publicada na Vercel contém um modo autenticado integrado ao **Supabase Auth e PostgreSQL**. A conta de avaliação é criada pelo responsável, não pelo visitante.
 
 1. Abra https://ubs-caic-gestao-avisos.vercel.app.
-2. Informe um email controlado pelo avaliador e uma senha para a **conta de testes**; clique em **Criar conta de testes**.
-3. Se solicitado, confirme a conta por email e use **Entrar — modo persistente**.
-4. Tente cadastrar uma consulta ou exame fictício e verifique se o registro permanece depois de recarregar a página.
+2. Use o email de demonstração `avaliador.ubs.caic@example.com` e a **senha fornecida separadamente pelo responsável pelo projeto**. Clique em **Entrar — modo persistente**.
+3. Confirme que aparece o contador **Conta DEMO: 0/10 registros utilizados** (ou o número atual).
+4. Cadastre consultas e exames com dados fictícios. O total máximo é de **10 registros somados**, independentemente do tipo.
+5. Ao atingir 10, o sistema impede novos registros. Use **Excluir** em uma consulta ou exame para liberar uma vaga.
+6. Recarregue a página, **entre novamente** e confirme que os registros cadastrados continuam disponíveis no banco.
 
-**Estado dessa opção:** a integração existe no código, mas **o fluxo completo de autenticação e gravação ainda requer validação prática com uma conta de teste**. A confirmação de email depende das configurações do Supabase Auth. Não interpretar esse roteiro como prova de homologação para uso clínico.
+**Estado dessa opção:** o limite já foi instalado no banco e a interface foi preparada, mas **o responsável precisa criar a identidade de autenticação no Supabase e testar o fluxo de ponta a ponta**. O acesso compartilhado permite que diferentes avaliadores vejam e excluam os mesmos dados fictícios. Não utilizar informações reais.
 
 ## Código-fonte, hospedagem e banco de dados
 
