@@ -408,6 +408,7 @@
     if(!session)return;
     const profile=await api("/rest/v1/usuarios_operadores?select=id_operador,perfil_acesso&limit=1");
     if(!profile.length){
+      if(session.user.email==="avaliador.ubs.caic@example.com")throw new Error("Conta DEMO ainda não foi ativada pelo administrador. Aguarde a liberação.");
       await api("/rest/v1/usuarios_operadores","POST",{
         id_operador:session.user.id,nome_completo:"Operador demonstrativo",perfil_acesso:"recepcao"
       });
