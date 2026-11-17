@@ -39,13 +39,18 @@ O login é necessário **apenas para testar a modalidade com persistência no ba
 
 **Atenção:** estas credenciais são intencionalmente públicas e compartilhadas, apenas para testes. Qualquer pessoa pode acessar e apagar os registros fictícios dessa conta. Não use dados reais, senhas reutilizadas ou informações privadas.
 
-### Lembretes por SMS/WhatsApp — escopo e estado real
+### Central de Notificações — implementação demonstrativa ativa
 
-**Problema que o projeto pretende resolver:** faltas e esquecimentos de consultas e exames preventivos. **Solução proposta:** enviar lembretes antes da data agendada, como 48 e 24 horas antes, mediante consentimento e integração com um provedor de mensagens.
+**Automático:** ao cadastrar uma consulta futura na modalidade autenticada, um trigger PostgreSQL agenda os lembretes **48 e 24 horas antes** (quando ainda houver tempo para cada um). Um job **Supabase Cron / pg_cron a cada minuto** marca os avisos vencidos como **simulados**, mesmo com o navegador fechado. A programação e o histórico ficam em `public.notificacoes_demo`, protegidos por RLS. Cancelamentos removem os avisos ainda agendados.
 
-**O que o MVP faz hoje:** cadastra e acompanha agendamentos fictícios e permite simular a marcação de avisos/alterações de status. **O que ainda não faz:** não envia SMS nem WhatsApp reais, não agenda disparos automáticos e não possui provedor de mensagens integrado. A simulação não deve ser confundida com notificação entregue ao paciente.
+**Manual:** na aba **Notificações**, pesquise pelo nome, telefone ou protocolo do paciente fictício. Na aba **Fila e Alertas**, marque o resultado como **disponível**. Depois selecione o exame na Central e clique em **Registrar aviso manual simulado**. O evento fica registrado no histórico, sem incluir informações clínicas.
 
-A implementação futura exigirá fila de envio, agendador, provedor SMS/WhatsApp, autorização/consentimento do destinatário, logs de entrega, tratamento de falhas e cuidados com a LGPD.
+**Modo público sem login:** demonstração local em memória, sem persistência nem processamento cron em segundo plano.
+
+**Importante:** **não há envio real de SMS ou WhatsApp** nem integração com provedor de mensagens. “Simulada” significa somente que o sistema processou o evento internamente, **não** que uma mensagem foi entregue. A integração real dependeria de provedor, consentimento do destinatário e controles de privacidade/LGPD. Não inserir dados reais de pacientes.
+
+**Banco:** migração versionada em [db/notificacoes_demo.sql](db/notificacoes_demo.sql). O limite de **10 registros** da conta DEMO continua abrangendo **somente consultas e exames**, não os eventos de notificação.
+
 
 ## 1. Baixar e executar a versão de teste local
 
