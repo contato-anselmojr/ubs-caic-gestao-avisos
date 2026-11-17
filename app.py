@@ -1,5 +1,7 @@
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
+from http_headers import send_html_headers
+
 PAGE = r'''<!doctype html>
 <html lang="pt-BR">
 <head>
@@ -219,11 +221,11 @@ PAGE = r'''<!doctype html>
           <div class="form-grid">
             <div class="field">
               <label for="nome">1. Nome completo do paciente *</label>
-              <input type="text" id="nome" name="nome" value="Maria Helena da Silva" autocomplete="off" required>
+              <input type="text" id="nome" name="nome" autocomplete="off" required>
             </div>
             <div class="field">
               <label for="whatsapp">2. WhatsApp com DDD (11 dígitos) *</label>
-              <input type="tel" id="whatsapp" name="whatsapp" value="(41) 98888-0001" inputmode="numeric" maxlength="15" required>
+              <input type="tel" id="whatsapp" name="whatsapp" inputmode="numeric" maxlength="15" required>
               <span class="help">Exemplo: (41) 98888-0001</span>
             </div>
             <div class="field" id="fieldSpecialty">
@@ -237,11 +239,11 @@ PAGE = r'''<!doctype html>
             </div>
             <div class="field hidden" id="fieldProtocol">
               <label for="protocolo">3. Protocolo do exame preventivo *</label>
-              <input type="text" id="protocolo" name="protocolo" value="PREV-2026-105">
+              <input type="text" id="protocolo" name="protocolo">
             </div>
             <div class="field">
               <label for="dataRegistro" id="dateLabel">4. Data e horário da consulta *</label>
-              <input type="datetime-local" id="dataRegistro" name="dataRegistro" value="2026-12-20T09:00" required>
+              <input type="datetime-local" id="dataRegistro" name="dataRegistro" required>
             </div>
           </div>
           <div class="form-actions no-print">
@@ -318,6 +320,17 @@ PAGE = r'''<!doctype html>
       button.addEventListener('click', () => showView(button.dataset.go));
     });
 
+    function localDateTimeNow() {
+      const now = new Date();
+      const pad = number => String(number).padStart(2, '0');
+      return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+    }
+
+    function isFutureConsultation(value) {
+      const selected = new Date(value);
+      return !Number.isNaN(selected.getTime()) && selected.getTime() > Date.now();
+    }
+
     function setMode(mode) {
       currentMode = mode;
       const isConsultation = mode === 'consulta';
@@ -332,12 +345,13 @@ PAGE = r'''<!doctype html>
       if (isConsultation) {
         dateLabel.textContent = '4. Data e horário da consulta *';
         dateInput.type = 'datetime-local';
-        dateInput.value = '2026-12-20T09:00';
+        dateInput.min = localDateTimeNow();
       } else {
         dateLabel.textContent = '4. Data da coleta na UBS *';
         dateInput.type = 'date';
-        dateInput.value = '2026-11-13';
+        dateInput.removeAttribute('min');
       }
+      dateInput.value = '';
       hideMessages();
     }
 
@@ -432,6 +446,7 @@ PAGE = r'''<!doctype html>
       if (name.length < 3) message = 'Informe o nome completo do paciente.';
       else if (digits.length !== 11) message = 'Telefone inválido: informe DDD + 9 dígitos (11 números ao todo).';
       else if (!dateValue) message = 'Informe a data do registro.';
+      else if (currentMode === 'consulta' && !isFutureConsultation(dateValue)) message = 'A consulta deve ser agendada para uma data e horário futuros.';
       else if (currentMode === 'exame' && !document.getElementById('protocolo').value.trim()) message = 'Informe o protocolo do exame preventivo.';
 
       if (message) {
@@ -481,6 +496,7 @@ PAGE = r'''<!doctype html>
     });
 
     renderTables();
+    setMode('consulta');
   </script>
 </body>
 </html>'''
@@ -494,9 +510,7 @@ class UBSHandler(BaseHTTPRequestHandler):
 
         body = PAGE.encode("utf-8")
         self.send_response(200)
-        self.send_header("Content-Type", "text/html; charset=utf-8")
-        self.send_header("Content-Length", str(len(body)))
-        self.send_header("Cache-Control", "no-store")
+        send_html_headers(self, len(body))
         self.end_headers()
         self.wfile.write(body)
 
