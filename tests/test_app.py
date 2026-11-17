@@ -67,6 +67,22 @@ class TestServidorUBS(unittest.TestCase):
                 len(response.read()),
             )
 
+    def test_formulario_sem_dados_demonstrativos_prepreenchidos(self):
+        with urlopen(self.base_url + '/', timeout=5) as response:
+            body = response.read().decode('utf-8')
+        self.assertIn('id="nome" name="nome" autocomplete="off"', body)
+        self.assertNotIn('name="nome" value=', body)
+        self.assertNotIn('name="whatsapp" value=', body)
+        self.assertNotIn('name="dataRegistro" value=', body)
+
+    def test_validacao_de_data_futura_de_consulta_no_javascript(self):
+        with urlopen(self.base_url + '/', timeout=5) as response:
+            body = response.read().decode('utf-8')
+        self.assertIn('function isFutureConsultation(value)', body)
+        self.assertIn('selected.getTime() > Date.now()', body)
+        self.assertIn('dateInput.min = localDateTimeNow();', body)
+        self.assertIn("currentMode === 'consulta' && !isFutureConsultation(dateValue)", body)
+
     def test_contador_consultas_nao_usa_valor_fixo(self):
         with urlopen(self.base_url + '/', timeout=5) as response:
             body = response.read().decode('utf-8')
