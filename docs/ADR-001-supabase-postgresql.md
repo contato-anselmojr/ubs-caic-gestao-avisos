@@ -1,45 +1,43 @@
-# ADR-001 — Persistência de dados demonstrativos com Supabase PostgreSQL
+# ADR-001 — Persistência demonstrativa com Supabase PostgreSQL
 
 **Projeto:** Sistema de Gestão de Agendamentos e Notificação de Exames — UBS CAIC  
-**Data da decisão:** 17/11/2026  
-**Status:** Proposta aprovada para desenvolvimento; integração ainda não implementada
+**Decisão inicial:** 17/11/2026  
+**Status atualizado:** arquitetura e infraestrutura **implantadas**; autenticação/gravação de ponta a ponta **ainda não homologadas com usuário de teste**.
 
 ## Contexto
 
-O protótipo atual usa Python `http.server` para servir a interface HTML/CSS/JavaScript. Consultas e exames são armazenados apenas em arrays JavaScript durante a sessão. Atualizar a página apaga os novos registros, o que limita os testes de fluxo e a demonstração de persistência.
+O protótipo inicial utilizava Python `http.server`, HTML/CSS/JavaScript e arrays locais no navegador, sem persistência. A Experiência Prática 2 previa Django/MVT, SQLite no desenvolvimento e PostgreSQL futuramente.
 
-Na Experiência Prática 2, foram planejados Django/MVT, SQLite no desenvolvimento e PostgreSQL em produção. Para a Experiência Prática 4, foi escolhida uma evolução incremental com **Supabase PostgreSQL** como banco gerenciado, preservando inicialmente a interface do protótipo.
+Para a Experiência Prática IV foi adotado **Supabase PostgreSQL gerenciado** e **Vercel para a interface pública**, preservando-se o protótipo local Python para auditoria e teste baixável. A mudança permite demonstração pública sem manter uma instância Python em nuvem.
 
-## Decisão arquitetural
+## Arquitetura implementada
 
-1. Criar um **projeto Supabase exclusivo para a UBS CAIC**; não reutilizar o projeto já existente de outra aplicação.
-2. Manter a interface em HTML5, CSS3 e JavaScript e adicionar uma camada **backend Python** responsável por validar requisições e consultar o banco.
-3. Modelar `usuarios_operadores`, `agendamentos_consultas` e `exames_preventivos`, seguindo os requisitos da Experiência Prática 2, com dados estritamente fictícios.
-4. Implementar cadastro, listagem e atualização de status no servidor; substituir gradualmente os arrays em memória por respostas persistidas.
-5. Proteger o acesso: credenciais apenas no backend, `.env` ignorado no Git, permissões mínimas, RLS quando aplicável, nenhuma tabela sensível exposta a visitantes anônimos.
-6. Executar testes automatizados, realizar consultas de verificação após a criação de tabelas e registrar commits semânticos.
-7. Somente publicar a demonstração na internet após estabelecer autenticação/autorização adequadas ou limitar a interface pública a dados demonstrativos sem acesso irrestrito a escrita.
+1. **Repositório público no GitHub:** contém o código, o SQL e os workflows.
+2. **Hospedagem final:** https://ubs-caic-gestao-avisos.vercel.app — interface estática HTML5/CSS3/JavaScript disponibilizada pela Vercel a partir da branch `main`.
+3. **Supabase PostgreSQL 17:** projeto independente `ubs-caic-gestao-avisos` na região `sa-east-1`.
+4. **Estrutura de dados criada:** `usuarios_operadores`, `agendamentos_consultas`, `exames_preventivos`; restrições, relacionamentos, índices e políticas Row Level Security (RLS) por operador.
+5. **Autenticação e persistência:** código cliente utiliza Supabase Auth e a Data API com chave pública para operar apenas após login. **Não foi comprovado por teste de ponta a ponta** o ciclo de cadastro, confirmação de email, login e persistência após atualização.
+6. **Modo visitante público:** dados fictícios **apenas em memória no navegador**; não grava no Supabase. Não precisa de login.
+7. **Teste local baixável:** `app.py`/`iniciar_teste.py` servem um protótipo Python isolado, sem dependências externas e sem banco de dados.
+8. **Alternativa:** Supabase Edge Function `ubs-caic-demo`, usada também no endpoint de saúde.
 
-## O que existe hoje (antes da integração)
+## Verificação realizada
 
-- Três telas navegáveis: painel inicial, cadastro e fila/alertas.
-- Cadastro e atualização de status **simulados no navegador**, sem persistência.
-- Testes de servidor HTTP e GitHub Actions.
-- Refatoração dos cabeçalhos HTTP e validação de datas desenvolvidas na branch de revisão da Experiência Prática 3.
+- Aplicada migração do esquema `db/schema_supabase.sql` e confirmada a criação das três tabelas com RLS ativo.
+- Edge Function implantada e verificada como ativa.
+- Site na Vercel publicado com estado `READY` e acessado pelo workflow GitHub Actions.
+- Workflow de monitoramento validou as URLs públicas e conexão com PostgreSQL (Status `Success`) e agenda verificações a cada 15 minutos.
+- Os testes unitários Python validam o servidor local, formulários e procedimentos técnicos, **não substituindo** testes completos de login e persistência.
 
-## O que ainda falta implementar e comprovar
+## Divergências justificadas
 
-- Criar o projeto isolado no Supabase e verificar sua disponibilidade.
-- Criar tabelas, restrições, índices e políticas adequadas.
-- Conectar o backend ao banco sem expor credenciais.
-- Implementar endpoints protegidos, persistência, consultas e atualização de status.
-- Executar testes de integração com banco real e medir a cobertura novamente.
-- Integrar branches à `main`, realizar deploy e monitoramento.
+- **Django/MVT e SQLite:** não usados na versão publicada; a interface é hospedada como site estático e o Supabase disponibiliza Auth e Data API.
+- **Servidor Python:** mantido para avaliação local, sem conexão ao PostgreSQL.
+- **WhatsApp/SMS automático e fila FIFO:** continuam pendentes.
+- **Autenticação:** implementação frontend disponível, mas a operação completa precisa ser validada com uma conta de testes.
 
-## Diferenças em relação ao planejamento
+Essa adaptação reduz o custo e o esforço de implantação de um projeto individual, mantendo rastreabilidade técnica no GitHub. Foram utilizadas modalidades gratuitas disponíveis no escopo acadêmico, sujeitas a limites dos provedores.
 
-O PostgreSQL em nuvem passa a ser adotado **diretamente no ambiente de testes**, sem SQLite obrigatório como primeira etapa. A escolha do Supabase reduz o esforço de manutenção do servidor de banco. Isso **não significa** que Django/MVT, autenticação, envio de WhatsApp/SMS ou o módulo FIFO tenham sido entregues; seguem pendentes até sua implementação e verificação.
+## Privacidade
 
-## Limites éticos e operacionais
-
-O sistema é demonstrativo e não deve receber dados reais de pacientes, números telefônicos reais, laudos, diagnósticos ou informações clínicas. Uma conexão a um banco gerenciado não equivale a certificação de segurança nem autorização de uso por uma unidade de saúde.
+Os modos público e local utilizam **somente dados fictícios**. A modalidade autenticada também não deve receber informações reais de pacientes, exames ou prontuários. A publicação e o uso de Supabase RLS **não equivalem a homologação, autorização institucional ou conformidade completa** para um sistema clínico.
