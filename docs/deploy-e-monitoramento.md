@@ -1,45 +1,46 @@
-# Implantação pública — Experiência Prática IV
+# Implantação e monitoramento — Experiência Prática IV
 
-## Status
+## Endereço final da aplicação
 
-- Supabase project: `ubs-caic-gestao-avisos` (região sa-east-1, PostgreSQL 17).
-- Projeto separado da loja Bella Pink.
-- Tabelas `usuarios_operadores`, `agendamentos_consultas` e `exames_preventivos` criadas, com Row Level Security (RLS) habilitado e acesso segregado pelo operador autenticado.
-- Interface pública de demonstração em **Supabase Edge Functions (Deno/TypeScript)**, preservando o layout HTML/CSS/JavaScript do protótipo Python.
-- Modo visitante: dados **fictícios e temporários**, sem persistência.
-- Modo operador: requer conta de testes no Supabase Auth; após login, operações de cadastro/listagem e atualização de exame utilizam a Data API protegida por token e políticas RLS.
-- Nenhuma mensagem WhatsApp/SMS é enviada. **Não utilizar dados reais de pacientes**.
+**https://ubs-caic-gestao-avisos.vercel.app**
 
-## Endereço da aplicação
+A interface final de demonstração está publicada na **Vercel** e vinculada à branch `main` deste repositório GitHub. O deploy foi confirmado no estado `READY` e a URL pública foi verificada por GitHub Actions.
 
-https://vxaxhuxisigohsojsyct.supabase.co/functions/v1/ubs-caic-demo
+A implantação anterior no Supabase Edge Functions foi preservada como alternativa técnica: https://vxaxhuxisigohsojsyct.supabase.co/functions/v1/ubs-caic-demo.
 
-## Endpoint de monitoramento
+## Infraestrutura
 
-https://vxaxhuxisigohsojsyct.supabase.co/functions/v1/ubs-caic-demo/health
+- **GitHub:** repositório público, versionamento e testes automáticos.
+- **Vercel:** hospedagem estática gratuita no escopo do projeto (HTML5, CSS3 e JavaScript), HTTPS e deploy pelo GitHub.
+- **Supabase:** PostgreSQL 17 gerenciado, projeto `ubs-caic-gestao-avisos` na região `sa-east-1`, independente de outras aplicações.
+- **Banco PostgreSQL:** tabelas `usuarios_operadores`, `agendamentos_consultas` e `exames_preventivos`, com Row Level Security (RLS) habilitado.
+- **Python:** versão local baixável com `app.py` e `iniciar_teste.py`, sem usar banco de dados.
 
-O endpoint HTTP verifica a disponibilidade da Edge Function e tenta uma leitura mínima no PostgreSQL com credencial de serviço **restrita ao ambiente server-side** da função. Retorna `200 {"status":"ok","service":"ubs-caic-demo","database":"reachable"}` quando ambos respondem e `503 {"status":"down"}` em caso de falha. Nenhum dado de paciente é exposto por esse endpoint.
+Esses provedores oferecem modalidades gratuitas utilizadas no contexto do MVP, sujeitas a cotas e eventuais mudanças de política.
 
-## Monitoramento GitHub Actions
+## Operação dos modos de teste
 
-Arquivo: `.github/workflows/monitoramento.yml`.
+O modo público da Vercel funciona **sem login** e utiliza informações fictícias temporárias, sem gravar no Supabase. O modo autenticado contém integração com Supabase Auth e Data API para persistência em PostgreSQL, mas **o fluxo completo de cadastro/login e escrita ainda não foi homologado em teste de ponta a ponta**. Nenhum dado real de pacientes deve ser inserido em qualquer modalidade.
 
-Gatilhos: agendamento a cada 15 minutos em UTC, execução manual e envio da própria configuração. Utiliza `curl` e falha se o endpoint retornar HTTP não 2xx ou se os indicadores `status=ok` e `database=reachable` não estiverem presentes. O resultado fica registrado em GitHub Actions como **Success (UP)** ou **Failure (possível DOWN)**. Não há ainda alertas externos por email/SMS configurados; a detecção depende de consultar o painel ou as notificações habituais do GitHub.
+## Monitoramento de disponibilidade
 
-## Distinção do protótipo anterior
+O workflow `.github/workflows/monitoramento.yml` executa verificações automáticas agendadas a cada **15 minutos** no GitHub Actions. São verificadas:
 
-O arquivo local `app.py` continua disponível para executar a interface como protótipo com `http.server`. O deploy público utiliza a implementação da interface em **Edge Function Deno**, não hospeda Python. Essa adaptação minimiza a necessidade de contratar uma segunda hospedagem, mas diverge da arquitetura Django/MVT planejada na Experiência Prática 2.
+1. A **URL final da Vercel**, incluindo a resposta HTTP e a presença de elementos principais da página HTML.
+2. A **implantação alternativa do Supabase Edge Functions**.
+3. O endpoint de saúde `https://vxaxhuxisigohsojsyct.supabase.co/functions/v1/ubs-caic-demo/health`, que testa conexão com PostgreSQL e retorna `status=ok` e `database=reachable` quando os recursos respondem.
 
-## Testes e limitações
+Uma execução em **Success** indica que as verificações passaram naquele instante; uma execução **Failure** sinaliza a necessidade de investigar indisponibilidade ou erro de conteúdo. O agendamento do GitHub Actions pode sofrer atrasos; não foi implementado alerta externo dedicado por SMS ou email.
 
-- O SQL aplicado foi verificado no banco de dados e as três tabelas estão vazias por padrão.
-- O painel do Supabase indica a Edge Function como ativa. A disponibilidade pública é verificada pelo workflow de monitoramento após o merge para a branch principal.
-- Cadastro/login dependem das configurações de email do Supabase Auth; se a confirmação de email estiver habilitada, o operador deverá confirmar a conta.
-- A interface pode exibir formulários para cadastro, mas não deve ser utilizada para informações de pacientes reais. Este projeto não é um sistema clínico de produção e não foi submetido a homologação por uma unidade de saúde.
-- A verificação de cobertura de 71% feita na Experiência Prática III corresponde ao **backend Python anterior**, não à execução Deno e à integração real com PostgreSQL.
+**Evidência técnica:** https://github.com/contato-anselmojr/ubs-caic-gestao-avisos/actions/runs/44143278860 — execução nº 10, concluída com `Success` e verificação da Vercel.
 
-## Evidências sugeridas
+## Capturas de tela necessárias para a entrega
 
-1. Screenshot do navegador exibindo a URL pública acima na barra de endereço e a tela principal.
-2. Screenshot do GitHub Actions com o job `verificar-disponibilidade` verde e a resposta `UP`.
-3. Captura opcional do Supabase Table Editor com as três tabelas e RLS habilitado, sem informação sensível.
+1. **Deploy:** navegador maximizado com a interface da UBS CAIC e barra de endereço contendo `https://ubs-caic-gestao-avisos.vercel.app`.
+2. **Monitoramento:** GitHub Actions com o job `verificar-disponibilidade` em `Success` e os passos de checagem visíveis.
+
+## Limites técnicos, éticos e operacionais
+
+O sistema é um protótipo acadêmico, **não é uma solução oficial ou homologada de saúde**. Não realiza envio real de WhatsApp/SMS, consulta a sistemas SUS, comunicação com laboratórios nem tratamento autorizado de dados de pacientes. O uso do PostgreSQL não equivale à segurança suficiente para produção clínica.
+
+Para roteiro de demonstração, consulte [GUIA_DO_AVALIADOR.md](../GUIA_DO_AVALIADOR.md).
