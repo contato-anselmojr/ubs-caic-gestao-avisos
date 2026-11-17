@@ -149,7 +149,7 @@
       <nav class="nav" aria-label="Navegação principal">
         <button type="button" class="active" data-view="inicio">⌂ Início</button>
         <button type="button" data-view="cadastro">＋ Novo Cadastro</button>
-        <button type="button" data-view="fila">♧ Fila e Alertas</button>
+        <button type="button" data-view="fila">♧ Fila e Alertas</button><button type="button" data-view="notificacoes">✉ Notificações</button>
         <button type="button" id="printButton">⎙ Imprimir tela</button>
         <button type="button" class="logout" id="logoutButton">Sair</button>
       </nav>
@@ -299,6 +299,18 @@
       <div class="demo-strip">Simulação de interface: os status podem ser alterados para demonstrar o fluxo, mas não há integração com WhatsApp, laboratório ou sistema oficial do SUS.</div>
     </section>
 
+    <section id="notificacoes" class="screen" aria-labelledby="titleNotificacoes"><div class="card panel">
+<h1 id="titleNotificacoes">Central de Notificações — Simulação</h1>
+<p class="subtitle">Lembretes automáticos de consultas e avisos manuais de resultados. Nenhum SMS ou WhatsApp é enviado.</p>
+<div class="demo-strip">Consultas: lembretes programados automaticamente para 48h e 24h antes. No modo autenticado, o Supabase processa as simulações a cada minuto, mesmo com o site fechado.</div>
+<div class="panel-heading section-gap"><h2>Disparo manual — resultado disponível</h2></div>
+<div class="form-grid"><div class="field"><label for="patientSearch">Buscar paciente cadastrado</label><input id="patientSearch" type="search" placeholder="Nome, telefone ou protocolo"></div>
+<div class="field"><label for="manualExamSelect">Exame disponível</label><select id="manualExamSelect"><option value="">Selecione um exame</option></select></div></div>
+<p class="help">Marque o exame como disponível na aba Fila e Alertas antes de registrar o aviso.</p>
+<div class="form-actions no-print"><button type="button" class="btn btn-primary" id="sendManualNotice">Registrar aviso manual simulado</button></div>
+<div class="section-gap"><h2>Histórico de notificações</h2><p class="subtitle">“Simulada” significa processamento registrado, não entrega ao telefone.</p></div>
+<div class="table-wrap section-gap"><table aria-label="Histórico de notificações"><thead><tr><th>Paciente</th><th>Tipo</th><th>Programada para</th><th>Status</th><th>Mensagem</th></tr></thead><tbody id="notificationTableBody"></tbody></table></div>
+</div></section>
     <div class="screen-footer">Protótipo demonstrativo • UBS Sueli Dutra Alves (CAIC) • Paranaguá — PR</div>
   </main>
 
@@ -316,6 +328,7 @@
     {name:"João Carlos Pereira",phone:"(41) 98888-1101",specialty:"Clínico Geral",date:"15/11/2026 08:30",status:"cancelled"},
     {name:"Maria Helena da Silva",phone:"(41) 98888-1102",specialty:"Odontologia",date:"18/11/2026 10:00",status:"confirmed"}
   ];
+  let notifications = [];
   let exams = [
     {protocol:"PREV-2026-084",name:"Ana Paula Costa",phone:"(41) 98888-2201",status:"ready"},
     {protocol:"PREV-2026-041",name:"Sônia Maria Souza",phone:"(41) 98888-2202",status:"sent"}
@@ -380,11 +393,12 @@
       const st=sent?'<span class="badge sent">✓ Disponibilidade registrada (sem envio)</span>':
         ready?'<span class="badge ready">♧ Exame pronto (demonstração)</span>':
         '<span class="badge ready">◷ Aguardando laboratório</span>';
-      const action=sent?'<span class="help">Ação concluída</span>':
+      const action=(sent||ready)?'<span class="help">'+(sent?'Aviso registrado':'Aguardando aviso manual')+'</span>':
         '<button class="btn btn-success btn-small no-print" type="button" data-notify="'+i+'">Registrar disponibilidade</button>';
       const del=session&&e.id?'<button class="btn btn-danger btn-small no-print" type="button" data-delete-exam="'+i+'" aria-label="Excluir exame '+escapeHtml(e.protocol)+'">Excluir</button>':'<span class="help">—</span>';
       return '<tr><td class="patient">'+escapeHtml(e.protocol)+'</td><td>'+escapeHtml(e.name)+'</td><td>'+escapeHtml(e.phone)+'</td><td>'+st+'</td><td class="no-print">'+action+'</td><td class="no-print">'+del+'</td></tr>';
     }).join("") || '<tr><td colspan="6" class="empty">Nenhum exame registrado.</td></tr>';
+    renderNotifications();
     $("countConsultas").textContent=String(appointments.length);
     $("countCanceladas").textContent=String(appointments.filter(a=>a.status==="cancelled").length);
     $("countExames").textContent=String(exams.filter(e=>e.status==="ready").length);
@@ -417,15 +431,17 @@
   }
   async function loadSaved() {
     if(!session)return;
-    const [a,e]=await Promise.all([
+    const [a,e,n]=await Promise.all([
       api("/rest/v1/agendamentos_consultas?select=*&order=data_hora_consulta.asc"),
-      api("/rest/v1/exames_preventivos?select=*&order=data_coleta.desc")
+      api("/rest/v1/exames_preventivos?select=*&order=data_coleta.desc"),
+      api("/rest/v1/notificacoes_demo?select=*&order=programada_para.desc&limit=100")
     ]);
     appointments=a.map(v=>({id:v.id_agendamento,name:v.nome_paciente,phone:v.telefone_whatsapp,
       specialty:reverseSpec[v.especialidade]||v.especialidade,date:fmt(v.data_hora_consulta),
       status:v.status_confirmacao==="cancelado"?"cancelled":v.status_confirmacao==="pendente"?"pending":"confirmed"}));
     exams=e.map(v=>({id:v.id_exame,protocol:v.protocolo_coleta,name:v.nome_paciente,
-      phone:v.telefone_whatsapp,status:v.status_laudo==="aguardando_laboratorio"?"awaiting":"sent"}));
+      phone:v.telefone_whatsapp,status:v.status_laudo==="aguardando_laboratorio"?"awaiting":v.status_laudo==="disponivel"?"ready":"sent"}));
+    notifications=n.map(v=>({name:v.nome_paciente,type:v.tipo,when:v.programada_para,status:v.status,message:v.mensagem}));
     render();
   }
   async function login() {
@@ -487,6 +503,7 @@
           await loadSaved();
         } else {
           appointments.unshift({name,phone,specialty:$("especialidade").value,date:fmt(date),status:"pending"});
+          scheduleLocalReminders(name,date);
           render();
         }
       } else {
@@ -503,7 +520,7 @@
       }
       $("nome").value="";$("whatsapp").value="";
       showView("fila");
-      notice(session?"Registro salvo no banco PostgreSQL com sucesso.":"Registro de demonstração criado (não persistente).");
+      notice(session?"Registro salvo. Lembretes simulados programados automaticamente para consultas elegíveis.":"Registro fictício criado. Lembretes locais programados (não persistentes).");
     } catch(e){$("formError").textContent="Não foi possível salvar: "+e.message;$("formError").classList.remove("hidden");}
   }
   async function deleteSaved(type,i) {
@@ -522,24 +539,56 @@
   }
   async function updateExam(i) {
     const e=exams[i];
-    if(!e||e.status==="sent")return;
+    if(!e||e.status==="sent"||e.status==="ready")return;
     try{
       if(session && e.id){
         await api("/rest/v1/exames_preventivos?id_exame=eq."+encodeURIComponent(e.id),"PATCH",{
-          status_laudo:"disponivel_notificado"
+          status_laudo:"disponivel"
         });
         await loadSaved();
       } else {
+        e.status="ready";render();
+      }
+      notice("Resultado disponível. Abra a Central de Notificações para registrar o aviso manual simulado.");
+    }catch(err){notice("Falha ao registrar: "+err.message,true);}
+  }
+
+  function scheduleLocalReminders(name,date) {
+    const when=new Date(date).getTime(),now=Date.now();
+    for(const h of [48,24]){
+      const due=when-h*3600000;
+      if(due>now)notifications.unshift({name,type:"lembrete_"+h+"h",when:new Date(due).toISOString(),status:"agendada",message:"UBS CAIC (SIMULAÇÃO): lembrete de consulta em "+fmt(date)+"."});
+    }
+  }
+  function renderNotifications(){
+    const q=$("patientSearch").value.trim().toLowerCase();
+    const eligible=exams.map((e,i)=>({...e,index:i})).filter(e=>e.status==="ready"&&[e.name,e.phone,e.protocol].some(v=>String(v).toLowerCase().includes(q)));
+    $("manualExamSelect").innerHTML='<option value="">Selecione um exame</option>'+eligible.map(e=>'<option value="'+e.index+'">'+escapeHtml(e.name)+' — '+escapeHtml(e.protocol)+'</option>').join("");
+    $("notificationTableBody").innerHTML=notifications.map(n=>'<tr><td>'+escapeHtml(n.name)+'</td><td>'+escapeHtml(n.type.replaceAll("_"," "))+'</td><td>'+escapeHtml(fmt(n.when))+'</td><td>'+escapeHtml(n.status==="simulada"?"Simulada — não enviada":"Agendada — simulação")+'</td><td>'+escapeHtml(n.message)+'</td></tr>').join("")||'<tr><td colspan="5" class="empty">Nenhuma notificação registrada.</td></tr>';
+  }
+  async function sendManualNotice(){
+    const value=$("manualExamSelect").value,i=Number(value),e=exams[i];
+    if(value===""||!e||e.status!=="ready"){notice("Selecione um exame marcado como disponível.",true);return;}
+    const message="UBS CAIC (SIMULAÇÃO): resultado de exame disponível para retirada na unidade. Nenhuma informação clínica é enviada.";
+    try{
+      if(session&&e.id){
+        await api("/rest/v1/notificacoes_demo","POST",{id_operador:session.user.id,id_exame:e.id,tipo:"resultado_disponivel",origem:"manual",nome_paciente:e.name,telefone_destino:e.phone,mensagem:message,programada_para:new Date().toISOString(),simulada_em:new Date().toISOString(),status:"simulada"});
+        await api("/rest/v1/exames_preventivos?id_exame=eq."+encodeURIComponent(e.id),"PATCH",{status_laudo:"disponivel_notificado"});
+        await loadSaved();
+      }else{
+        notifications.unshift({name:e.name,type:"resultado_disponivel",when:new Date().toISOString(),status:"simulada",message});
         e.status="sent";render();
       }
-      notice("Disponibilidade registrada. Nenhuma mensagem foi enviada ao paciente.");
-    }catch(err){notice("Falha ao registrar: "+err.message,true);}
+      notice("Aviso manual simulado registrado para "+e.name+". Nenhuma mensagem real foi enviada.");
+    }catch(err){notice("Falha ao registrar aviso: "+err.message,true);}
   }
   document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.view)));
   document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.go)));
   $("tabConsulta").addEventListener("click",()=>setMode("consulta"));
   $("tabExame").addEventListener("click",()=>setMode("exame"));
   $("registrationForm").addEventListener("submit",submitForm);
+  $("patientSearch").addEventListener("input",renderNotifications);
+  $("sendManualNotice").addEventListener("click",sendManualNotice);
   $("examTableBody").addEventListener("click",e=>{const b=e.target.closest("[data-notify]");if(b)updateExam(Number(b.dataset.notify));const d=e.target.closest("[data-delete-exam]");if(d)deleteSaved("exame",Number(d.dataset.deleteExam));});
   $("appointmentTableBody").addEventListener("click",e=>{const d=e.target.closest("[data-delete-consult]");if(d)deleteSaved("consulta",Number(d.dataset.deleteConsult));});
   $("newExamButton").addEventListener("click",()=>{setMode("exame");showView("cadastro");});

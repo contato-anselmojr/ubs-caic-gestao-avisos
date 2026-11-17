@@ -64,3 +64,14 @@ As modalidades gratuitas desses serviços foram escolhidas por serem adequadas a
 ## Privacidade e limites
 
 **Todos os nomes, telefones, agendamentos e protocolos devem ser fictícios.** Não há envio real de mensagens, acesso a resultados de exames ou integração com o SUS. Este MVP não é sistema oficial da UBS, nem está autorizado a tratar dados reais de pacientes.
+
+## Central de Notificações — roteiro de demonstração
+
+1. Entre no site com a conta DEMO. Abra **Novo Cadastro** e registre uma consulta fictícia para daqui a mais de 48 horas.
+2. Abra a aba **Notificações** e confirme dois lembretes com status **Agendada — simulação**, programados para 48h e 24h antes.
+3. O job do Supabase Cron verifica os lembretes vencidos a cada minuto, **mesmo com o site fechado**, alterando-os para **Simulada — não enviada**. Para visualizar a mudança, recarregue e entre novamente.
+4. Registre um exame preventivo fictício. Em **Fila e Alertas**, clique em **Registrar disponibilidade** para indicar que o resultado chegou.
+5. Abra **Notificações**, pesquise o paciente por nome, telefone ou protocolo, selecione o exame e clique em **Registrar aviso manual simulado**.
+6. Confira o histórico de eventos. **Nenhum SMS ou WhatsApp real foi enviado**; o sistema apenas demonstra o agendamento, processamento e registro interno.
+
+O modo público sem login utiliza dados em memória, e não executa o processamento de lembretes em segundo plano. A modalidade autenticada usa PostgreSQL e Supabase Cron.
