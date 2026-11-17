@@ -5,18 +5,18 @@
 Permitir que professor e interessados testem a **persistência fictícia** no Supabase PostgreSQL usando uma única conta de avaliação, sem acesso a GitHub, Vercel ou ao painel Supabase.
 
 **URL:** https://ubs-caic-gestao-avisos.vercel.app  
-**Email reservado para a conta DEMO:** `avaliador.ubs.caic@example.com`  
-**Senha:** definida no painel Supabase Auth pelo responsável e **não deve ser publicada no GitHub**. Compartilhar somente com os avaliadores.
+**Email de login da conta DEMO (criada e confirmada):** `avaliador.ubs.caic@example.com`  
+**Senha:** definida no painel Supabase Auth pelo responsável. **Não está publicada no GitHub**; deve ser comunicada diretamente aos avaliadores por um canal separado. A senha não dá acesso aos painéis GitHub, Vercel ou Supabase.
 
-**Estado de implantação:** trigger de limite aplicado ao PostgreSQL; interface com contador, exclusão e login preparada. A conta Supabase Auth precisa ser provisionada pelo responsável. **Não declarar a conta funcional até completar as etapas abaixo e testar o login.**
+**Estado de implantação (17/11/2026):** usuário Auth **criado, email confirmado e perfil `demonstracao` vinculado** à tabela `usuarios_operadores`. Triggers de limite aplicados ao PostgreSQL; interface com contador e exclusão publicada na Vercel. **O login real, a persistência após novo acesso e o bloqueio da 11ª inserção ainda precisam de teste de ponta a ponta no navegador.**
 
-## Provisionar a conta (ação manual do proprietário)
+## Provisionamento realizado (para auditoria e reprodução)
 
-1. Abra https://supabase.com/dashboard/project/vxaxhuxisigohsojsyct/auth/users.
-2. No menu **Authentication → Users**, clique em **Add user** / **Create new user**.
-3. Informe o email `avaliador.ubs.caic@example.com` e uma senha exclusiva para demonstração (pelo menos 12 caracteres). Se o painel oferecer a opção, marque o email como confirmado / **Auto Confirm User**, pois `example.com` é um domínio reservado para exemplos e não recebe email de confirmação.
-4. Salve a conta. **Não envie a senha para este repositório.**
-5. No SQL Editor do **mesmo projeto UBS CAIC**, execute:
+1. **Concluído:** o proprietário criou a conta em https://supabase.com/dashboard/project/vxaxhuxisigohsojsyct/auth/users.
+2. **Concluído:** o usuário está presente no Supabase Authentication → Users.
+3. **Concluído:** email `avaliador.ubs.caic@example.com` confirmado. A senha foi definida pelo proprietário e não é recuperável em texto simples.
+4. **Concluído:** conta salva. **A senha não deve ser enviada para este repositório.**
+5. **Executado com sucesso no banco UBS CAIC:** o comando abaixo vinculou o perfil `demonstracao` à conta Auth:
 
 ```sql
 insert into public.usuarios_operadores
@@ -29,7 +29,7 @@ do update set nome_completo = excluded.nome_completo,
               perfil_acesso = excluded.perfil_acesso;
 ```
 
-6. Verifique a existência do perfil:
+6. **Confirmado:** o perfil `demonstracao` foi vinculado ao usuário. Para consultar novamente:
 
 ```sql
 select p.nome_completo, p.perfil_acesso
@@ -40,7 +40,7 @@ where u.email = 'avaliador.ubs.caic@example.com';
 
 O resultado deve conter exatamente uma linha com `perfil_acesso = demonstracao`.
 
-7. Entre na Vercel com esse email e senha. O site deve mostrar **Conta DEMO: 0/10 registros utilizados**.
+7. **Pendente de validação prática:** entre na Vercel com esse email e a senha escolhida. O site deve mostrar o contador **Conta DEMO: N/10 registros utilizados**.
 8. Crie uma consulta fictícia e um exame fictício; recarregue a página, **entre novamente** e confirme que os registros reaparecem. Teste exclusão e o contador.
 9. Teste o limite: ao chegar a 10 registros somados, uma 11ª tentativa deve falhar. Após excluir um registro, o próximo cadastro deve ser permitido.
 
