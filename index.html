@@ -1,0 +1,530 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>UBS Sueli Dutra Alves (CAIC) | Gestão de Avisos</title>
+  <style>
+    :root {
+      --navy: #0d3b66;
+      --navy-dark: #082b4b;
+      --blue-soft: #eaf2f9;
+      --ink: #1a252f;
+      --muted: #64748b;
+      --line: #dbe3ec;
+      --surface: #ffffff;
+      --background: #f3f6fa;
+      --green: #16834a;
+      --green-soft: #e8f6ee;
+      --red: #bd3030;
+      --red-soft: #fff0f0;
+      --amber: #946200;
+      --amber-soft: #fff7df;
+      --shadow: 0 8px 24px rgba(22, 44, 68, .07);
+      font-family: Inter, "Segoe UI", Arial, sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--background); color: var(--ink); font-size: 15px; line-height: 1.5; }
+    button, input, select { font: inherit; }
+    button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: 3px solid #ffbf00; outline-offset: 2px;
+    }
+    .topbar { background: var(--navy); color: #fff; box-shadow: 0 3px 12px rgba(4, 27, 49, .18); }
+    .topbar-inner { max-width: 1180px; margin: 0 auto; padding: 15px 22px; display: flex; align-items: center; justify-content: space-between; gap: 18px; }
+    .brand { display: flex; align-items: center; gap: 12px; min-width: 250px; }
+    .brand-mark { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: rgba(255,255,255,.15); font-size: 23px; }
+    .brand-title { font-weight: 750; letter-spacing: .1px; }
+    .brand-subtitle { color: #d7e5f2; font-size: 12px; margin-top: 1px; }
+    .nav { display: flex; align-items: center; flex-wrap: wrap; justify-content: flex-end; gap: 7px; }
+    .nav button { border: 1px solid rgba(255,255,255,.3); color: #fff; background: transparent; border-radius: 8px; padding: 10px 13px; min-height: 42px; cursor: pointer; font-weight: 650; }
+    .nav button:hover, .nav button.active { background: rgba(255,255,255,.16); border-color: rgba(255,255,255,.65); }
+    .nav .logout { background: #b83232; border-color: #b83232; }
+    .container { width: min(1180px, calc(100% - 40px)); margin: 28px auto 54px; }
+    .screen { display: none; }
+    .screen.active { display: block; animation: appear .16s ease-out; }
+    @keyframes appear { from { opacity: .65; transform: translateY(3px); } to { opacity: 1; transform: none; } }
+    .page-heading { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; margin-bottom: 23px; }
+    h1 { color: var(--navy); margin: 0 0 5px; font-size: clamp(23px, 3vw, 29px); line-height: 1.2; }
+    h2 { color: var(--navy); margin: 0; font-size: 19px; }
+    .subtitle { margin: 0; color: var(--muted); }
+    .button-row { display: flex; gap: 9px; flex-wrap: wrap; }
+    .btn { border: 1px solid transparent; min-height: 43px; border-radius: 8px; padding: 10px 15px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; cursor: pointer; text-decoration: none; }
+    .btn-primary { color: #fff; background: var(--navy); }
+    .btn-primary:hover { background: var(--navy-dark); }
+    .btn-dark { color: #fff; background: #263746; }
+    .btn-outline { color: var(--navy); border-color: #9aafc3; background: #fff; }
+    .btn-outline:hover { background: var(--blue-soft); }
+    .btn-success { color: #fff; background: var(--green); }
+    .btn-danger { color: #fff; background: var(--red); }
+    .btn-small { min-height: 36px; padding: 7px 10px; font-size: 13px; }
+    .card { background: var(--surface); border: 1px solid var(--line); border-radius: 13px; box-shadow: var(--shadow); }
+    .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 17px; margin: 22px 0; }
+    .stat-card { padding: 22px 23px; min-height: 165px; border-left: 5px solid var(--navy); }
+    .stat-card.red { border-left-color: var(--red); }
+    .stat-card.green { border-left-color: var(--green); }
+    .stat-top { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-size: 12px; font-weight: 800; letter-spacing: .6px; text-transform: uppercase; }
+    .stat-icon { font-size: 23px; }
+    .stat-number { color: var(--navy); font-size: 43px; line-height: 1.15; font-weight: 800; margin: 11px 0 7px; }
+    .stat-card.red .stat-number { color: var(--red); }
+    .stat-card.green .stat-number { color: var(--green); }
+    .stat-description { margin: 0; color: #536273; font-size: 13px; }
+    .notice { display: flex; gap: 12px; align-items: flex-start; border: 1px solid #d4e1ec; border-radius: 10px; background: #f8fbfe; color: #34495e; padding: 15px 17px; margin-top: 20px; }
+    .notice-icon { font-size: 20px; }
+    .notice strong { color: var(--navy); }
+    .demo-strip { margin-top: 17px; border-radius: 9px; padding: 10px 13px; background: var(--amber-soft); color: #6d4b00; font-size: 13px; border: 1px solid #f1dda0; }
+    .panel { padding: 24px; }
+    .panel-heading { display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap; margin-bottom: 18px; }
+    .tabs { display: flex; gap: 8px; border-bottom: 1px solid var(--line); margin: 18px 0 22px; }
+    .tab { color: #526477; background: transparent; border: 0; border-bottom: 3px solid transparent; padding: 12px 14px; cursor: pointer; font-weight: 700; }
+    .tab.active { color: var(--navy); border-bottom-color: var(--navy); }
+    .form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+    .field { display: flex; flex-direction: column; gap: 6px; }
+    label { color: var(--navy); font-weight: 750; font-size: 14px; }
+    input, select { width: 100%; min-height: 46px; border: 1.7px solid #9aa8b6; border-radius: 8px; padding: 10px 12px; background: #fff; color: #111827; }
+    input::placeholder { color: #8793a0; }
+    .help { color: var(--muted); font-size: 12px; }
+    .form-actions { display: flex; gap: 10px; margin-top: 22px; flex-wrap: wrap; }
+    .error { padding: 12px 14px; border-radius: 8px; background: var(--red-soft); border: 1px solid #efb3b3; color: #982323; font-weight: 650; margin-bottom: 17px; }
+    .success { padding: 13px 16px; border-radius: 9px; background: var(--green-soft); border: 1px solid #b9dfc8; color: #145c36; font-weight: 700; margin-bottom: 18px; }
+    .hidden { display: none !important; }
+    .table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+    table { width: 100%; border-collapse: collapse; min-width: 700px; }
+    th, td { padding: 13px 14px; border-bottom: 1px solid #e5ebf1; text-align: left; vertical-align: middle; }
+    th { color: #34495e; background: #f1f5f9; font-size: 12px; letter-spacing: .35px; text-transform: uppercase; }
+    td { font-size: 14px; }
+    tbody tr:last-child td { border-bottom: 0; }
+    tbody tr:hover { background: #fafcff; }
+    .patient { font-weight: 750; color: #24384b; }
+    .badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; padding: 7px 10px; font-size: 12px; font-weight: 800; white-space: nowrap; }
+    .badge.ready { background: var(--blue-soft); color: #15558b; }
+    .badge.sent { background: var(--green-soft); color: #17613b; }
+    .badge.cancelled { background: var(--red-soft); color: #a32323; }
+    .badge.confirmed { background: #edf5ff; color: #215b95; }
+    .empty { padding: 22px; color: var(--muted); text-align: center; }
+    .section-gap { margin-top: 22px; }
+    .screen-footer { text-align: center; color: #7b8794; font-size: 12px; margin-top: 26px; }
+    @media (max-width: 850px) {
+      .topbar-inner { align-items: flex-start; flex-direction: column; }
+      .nav { justify-content: flex-start; }
+      .stats { grid-template-columns: 1fr; }
+      .stat-card { min-height: 145px; }
+    }
+    @media (max-width: 620px) {
+      .container { width: min(100% - 24px, 1180px); margin-top: 19px; }
+      .topbar-inner { padding: 13px 14px; }
+      .nav button { flex: 1 1 auto; padding: 9px 10px; }
+      .brand { min-width: 0; }
+      .panel { padding: 17px; }
+      .form-grid { grid-template-columns: 1fr; }
+      .tabs { flex-direction: column; border-bottom: 0; }
+      .tab { text-align: left; border: 1px solid var(--line); border-radius: 7px; }
+      .tab.active { border: 1px solid var(--navy); background: var(--blue-soft); }
+      .page-heading { align-items: flex-start; }
+    }
+    @media print {
+      @page { size: A4 landscape; margin: 12mm; }
+      body { background: #fff; font-size: 12px; }
+      .topbar, .no-print, .screen-footer { display: none !important; }
+      .container { width: 100%; max-width: none; margin: 0; }
+      .screen { display: none !important; }
+      .screen.active { display: block !important; }
+      .card { box-shadow: none; break-inside: avoid; }
+      .table-wrap { overflow: visible; }
+      table { min-width: 0; }
+      th, td { padding: 8px; }
+      .panel { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar no-print">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true">✚</div>
+        <div>
+          <div class="brand-title">UBS Sueli Dutra Alves (CAIC)</div>
+          <div class="brand-subtitle">Sistema demonstrativo de gestão de avisos • SUS</div>
+        </div>
+      </div>
+      <nav class="nav" aria-label="Navegação principal">
+        <button type="button" class="active" data-view="inicio">⌂ Início</button>
+        <button type="button" data-view="cadastro">＋ Novo Cadastro</button>
+        <button type="button" data-view="fila">♧ Fila e Alertas</button>
+        <button type="button" id="printButton">⎙ Imprimir tela</button>
+        <button type="button" class="logout" id="logoutButton">Sair</button>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+<section class="card panel no-print" style="margin-bottom:20px" aria-labelledby="authTitle">
+<h2 id="authTitle">Acesso de demonstração / Banco PostgreSQL</h2>
+<p class="subtitle" style="margin:10px 0">Visitação pública: interface com dados fictícios temporários. Para testar persistência, crie uma conta de teste e entre. Não utilize informações reais de pacientes.</p>
+<p id="authStatus" class="demo-strip" role="status">Modo público: demonstração local com dados fictícios</p>
+<div class="form-grid" style="margin-top:12px">
+<div class="field"><label for="authEmail">Email da conta de testes</label><input id="authEmail" type="email" autocomplete="username" placeholder="teste@exemplo.com"></div>
+<div class="field"><label for="authPassword">Senha da conta de testes</label><input id="authPassword" type="password" autocomplete="current-password" placeholder="Mínimo de 8 caracteres"></div>
+</div>
+<div class="form-actions"><button id="loginButton" type="button" class="btn btn-primary">Entrar — modo persistente</button>
+<button id="signupButton" type="button" class="btn btn-outline">Criar conta de testes</button>
+<button id="logoutOperator" type="button" class="btn btn-outline hidden">Encerrar sessão persistente</button></div>
+</section>
+    <div id="globalSuccess" class="success hidden" role="status" aria-live="polite"></div>
+
+    <!-- TELA 1: PAINEL INICIAL -->
+    <section id="inicio" class="screen active" aria-labelledby="titleInicio">
+      <div class="page-heading">
+        <div>
+          <h1 id="titleInicio">Painel Resumo do Turno — UBS CAIC</h1>
+          <p class="subtitle">Conjunto Nilson Neves • Paranaguá — PR | Gestão de lembretes e exames preventivos</p>
+        </div>
+        <div class="button-row no-print">
+          <button class="btn btn-primary" type="button" data-go="cadastro">＋ Novo Cadastro Rápido</button>
+          <button class="btn btn-dark" type="button" data-go="fila">☷ Abrir Fila e Alertas</button>
+        </div>
+      </div>
+
+      <div class="stats">
+        <article class="card stat-card">
+          <div class="stat-top"><span>Consultas monitoradas (48h)</span><span class="stat-icon">▦</span></div>
+          <div class="stat-number" id="countConsultas">2</div>
+          <p class="stat-description">Registros acompanhados para lembretes de consulta.</p>
+        </article>
+        <article class="card stat-card red">
+          <div class="stat-top"><span>Vagas canceladas (realocar)</span><span class="stat-icon">⚠</span></div>
+          <div class="stat-number" id="countCanceladas">1</div>
+          <p class="stat-description">Pacientes desmarcaram; vagas disponíveis para encaixe.</p>
+        </article>
+        <article class="card stat-card green">
+          <div class="stat-top"><span>Exames preventivos prontos</span><span class="stat-icon">♧</span></div>
+          <div class="stat-number" id="countExames">1</div>
+          <p class="stat-description">Resultados aguardando registro de aviso ao paciente.</p>
+        </article>
+      </div>
+
+      <div class="notice">
+        <div class="notice-icon" aria-hidden="true">🔒</div>
+        <div><strong>Ambiente de demonstração:</strong> operador recepcao.caic01. Esta interface é demonstrativa. O modo persistente usa autenticação e PostgreSQL; não utilizar dados reais de pacientes.</div>
+      </div>
+      <div class="demo-strip">Atenção: os dados exibidos são fictícios para apresentação. Os botões registram apenas uma alteração de status — nenhuma mensagem é enviada pelo WhatsApp.</div>
+    </section>
+
+    <!-- TELA 2: CADASTRO -->
+    <section id="cadastro" class="screen" aria-labelledby="titleCadastro">
+      <div class="card panel">
+        <div class="page-heading" style="margin-bottom: 5px;">
+          <div>
+            <h1 id="titleCadastro">Cadastro Rápido no Balcão</h1>
+            <p class="subtitle">Registro demonstrativo de consultas e exames preventivos.</p>
+          </div>
+        </div>
+
+        <div class="tabs no-print" role="tablist" aria-label="Tipo de cadastro">
+          <button class="tab active" id="tabConsulta" type="button" role="tab" aria-selected="true">▦ Nova Consulta (Médico / Dentista)</button>
+          <button class="tab" id="tabExame" type="button" role="tab" aria-selected="false">▤ Novo Exame Preventivo (+45 dias)</button>
+        </div>
+
+        <div id="formError" class="error hidden" role="alert"></div>
+        <form id="registrationForm" novalidate>
+          <div class="form-grid">
+            <div class="field">
+              <label for="nome">1. Nome completo do paciente *</label>
+              <input type="text" id="nome" name="nome" autocomplete="off" required>
+            </div>
+            <div class="field">
+              <label for="whatsapp">2. WhatsApp com DDD (11 dígitos) *</label>
+              <input type="tel" id="whatsapp" name="whatsapp" inputmode="numeric" maxlength="15" required>
+              <span class="help">Exemplo: (41) 98888-0001</span>
+            </div>
+            <div class="field" id="fieldSpecialty">
+              <label for="especialidade">3. Especialidade / atendimento *</label>
+              <select id="especialidade" name="especialidade">
+                <option value="Odontologia">Odontologia (Dentista)</option>
+                <option value="Clínico Geral">Clínico Geral</option>
+                <option value="Pediatria">Pediatria</option>
+                <option value="Enfermagem">Enfermagem / Pré-Natal</option>
+              </select>
+            </div>
+            <div class="field hidden" id="fieldProtocol">
+              <label for="protocolo">3. Protocolo do exame preventivo *</label>
+              <input type="text" id="protocolo" name="protocolo">
+            </div>
+            <div class="field">
+              <label for="dataRegistro" id="dateLabel">4. Data e horário da consulta *</label>
+              <input type="datetime-local" id="dataRegistro" name="dataRegistro" required>
+            </div>
+          </div>
+          <div class="form-actions no-print">
+            <button type="submit" class="btn btn-primary">✓ Salvar Registro</button>
+            <button type="button" class="btn btn-outline" data-go="inicio">Cancelar e Voltar</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- TELA 3: FILA E ALERTAS -->
+    <section id="fila" class="screen" aria-labelledby="titleFila">
+      <div class="card panel">
+        <div class="panel-heading">
+          <div>
+            <h2 id="titleFila">♧ Resultados de Exames Preventivos</h2>
+            <p class="subtitle">Acompanhamento dos avisos de resultados prontos.</p>
+          </div>
+          <button class="btn btn-outline btn-small no-print" type="button" id="newExamButton">＋ Registrar Protocolo</button>
+        </div>
+        <div class="table-wrap">
+          <table aria-label="Resultados de exames preventivos">
+            <thead><tr><th>Protocolo</th><th>Paciente</th><th>WhatsApp</th><th>Status</th><th class="no-print">Ação</th></tr></thead>
+            <tbody id="examTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card panel section-gap">
+        <div class="panel-heading">
+          <div>
+            <h2>▦ Consultas Agendadas e Retorno de Lembretes</h2>
+            <p class="subtitle">Consultas registradas e situação do lembrete.</p>
+          </div>
+          <button class="btn btn-outline btn-small no-print" type="button" id="newAppointmentButton">＋ Agendar Consulta</button>
+        </div>
+        <div class="table-wrap">
+          <table aria-label="Consultas agendadas">
+            <thead><tr><th>Paciente</th><th>WhatsApp</th><th>Especialidade</th><th>Data / Horário</th><th>Status</th></tr></thead>
+            <tbody id="appointmentTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="demo-strip">Simulação de interface: os status podem ser alterados para demonstrar o fluxo, mas não há integração com WhatsApp, laboratório ou sistema oficial do SUS.</div>
+    </section>
+
+    <div class="screen-footer">Protótipo demonstrativo • UBS Sueli Dutra Alves (CAIC) • Paranaguá — PR</div>
+  </main>
+
+  <script>
+
+(() => {
+  "use strict";
+  const API = "https://vxaxhuxisigohsojsyct.supabase.co";
+  const KEY = "sb_publishable_jp_YeYEdgEjx8vCsBWxULw_HHjcqzt6";
+  let session = null;
+  let currentMode = "consulta";
+  let appointments = [
+    {name:"João Carlos Pereira",phone:"(41) 98888-1101",specialty:"Clínico Geral",date:"15/11/2026 08:30",status:"cancelled"},
+    {name:"Maria Helena da Silva",phone:"(41) 98888-1102",specialty:"Odontologia",date:"18/11/2026 10:00",status:"confirmed"}
+  ];
+  let exams = [
+    {protocol:"PREV-2026-084",name:"Ana Paula Costa",phone:"(41) 98888-2201",status:"ready"},
+    {protocol:"PREV-2026-041",name:"Sônia Maria Souza",phone:"(41) 98888-2202",status:"sent"}
+  ];
+  const $ = id => document.getElementById(id);
+  function escapeHtml(v) {
+    return String(v).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+  function notice(message, error=false) {
+    const el=$("globalSuccess");
+    el.textContent=message;
+    el.classList.remove("hidden");
+    el.className=error?"error":"success";
+    el.setAttribute("role",error?"alert":"status");
+  }
+  function showView(id) {
+    document.querySelectorAll(".screen").forEach(s=>s.classList.toggle("active",s.id===id));
+    document.querySelectorAll(".nav [data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===id));
+    $("formError").classList.add("hidden");
+    $("globalSuccess").classList.add("hidden");
+    window.scrollTo({top:0,behavior:"smooth"});
+  }
+  function dateTimeNow() {
+    const d=new Date(), p=n=>String(n).padStart(2,"0");
+    return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+"T"+p(d.getHours())+":"+p(d.getMinutes());
+  }
+  function setMode(mode) {
+    currentMode=mode;
+    const consulta=mode==="consulta";
+    $("tabConsulta").classList.toggle("active",consulta);
+    $("tabExame").classList.toggle("active",!consulta);
+    $("tabConsulta").setAttribute("aria-selected",String(consulta));
+    $("tabExame").setAttribute("aria-selected",String(!consulta));
+    $("fieldSpecialty").classList.toggle("hidden",!consulta);
+    $("fieldProtocol").classList.toggle("hidden",consulta);
+    $("dateLabel").textContent=consulta?"4. Data e horário da consulta *":"4. Data da coleta na UBS *";
+    $("dataRegistro").type=consulta?"datetime-local":"date";
+    if(consulta) $("dataRegistro").min=dateTimeNow();
+    else $("dataRegistro").removeAttribute("min");
+    $("dataRegistro").value="";
+    $("formError").classList.add("hidden");
+  }
+  function fmt(d) {
+    if(!d)return "";
+    const dt=new Date(d);
+    if(!Number.isNaN(dt.getTime()) && d.includes("T")) return dt.toLocaleString("pt-BR",{dateStyle:"short",timeStyle:"short"});
+    const v=d.split("T")[0].split("-");
+    return v[2]+"/"+v[1]+"/"+v[0];
+  }
+  function render() {
+    $("appointmentTableBody").innerHTML=appointments.map(a => {
+      const isCancelled=a.status==="cancelled";
+      const st=isCancelled?'<span class="badge cancelled">✕ Cancelado — vaga livre</span>':
+        a.status==="pending"?'<span class="badge ready">◷ Pendente</span>':
+        '<span class="badge confirmed">✓ Confirmado (demonstração)</span>';
+      return '<tr><td class="patient">'+escapeHtml(a.name)+'</td><td>'+escapeHtml(a.phone)+'</td><td>'+escapeHtml(a.specialty)+'</td><td>'+escapeHtml(a.date)+'</td><td>'+st+'</td></tr>';
+    }).join("") || '<tr><td colspan="5" class="empty">Nenhuma consulta registrada.</td></tr>';
+    $("examTableBody").innerHTML=exams.map((e,i) => {
+      const ready=e.status==="ready";
+      const sent=e.status==="sent";
+      const st=sent?'<span class="badge sent">✓ Disponibilidade registrada (sem envio)</span>':
+        ready?'<span class="badge ready">♧ Exame pronto (demonstração)</span>':
+        '<span class="badge ready">◷ Aguardando laboratório</span>';
+      const action=sent?'<span class="help">Ação concluída</span>':
+        '<button class="btn btn-success btn-small no-print" type="button" data-notify="'+i+'">Registrar disponibilidade</button>';
+      return '<tr><td class="patient">'+escapeHtml(e.protocol)+'</td><td>'+escapeHtml(e.name)+'</td><td>'+escapeHtml(e.phone)+'</td><td>'+st+'</td><td class="no-print">'+action+'</td></tr>';
+    }).join("") || '<tr><td colspan="5" class="empty">Nenhum exame registrado.</td></tr>';
+    $("countConsultas").textContent=String(appointments.length);
+    $("countCanceladas").textContent=String(appointments.filter(a=>a.status==="cancelled").length);
+    $("countExames").textContent=String(exams.filter(e=>e.status==="ready").length);
+    $("authStatus").textContent=session?"Modo persistente: Supabase PostgreSQL — apenas dados fictícios":"Modo público: demonstração local com dados fictícios";
+  }
+  async function api(path,method="GET",body=null,authOverride=null) {
+    const headers={"apikey":KEY,"Content-Type":"application/json"};
+    const tok=authOverride || (session && session.access_token);
+    if(tok) headers.Authorization="Bearer "+tok;
+    if(method==="POST")headers.Prefer="return=representation";
+    const result=await fetch(API+path,{method,headers,body:body===null?undefined:JSON.stringify(body)});
+    let data=await result.json().catch(()=>null);
+    if(!result.ok)throw new Error((data && (data.msg||data.message||data.error_description||data.error)) || ("Erro HTTP "+result.status));
+    return data;
+  }
+  const specialties={Odontologia:"odontologia","Clínico Geral":"clinico_geral",Pediatria:"pediatria",Enfermagem:"enfermagem"};
+  const reverseSpec=Object.fromEntries(Object.entries(specialties).map(([k,v])=>[v,k]));
+  async function ensureProfile() {
+    if(!session)return;
+    const profile=await api("/rest/v1/usuarios_operadores?select=id_operador&limit=1");
+    if(!profile.length){
+      await api("/rest/v1/usuarios_operadores","POST",{
+        id_operador:session.user.id,nome_completo:"Operador demonstrativo",perfil_acesso:"recepcao"
+      });
+    }
+  }
+  async function loadSaved() {
+    if(!session)return;
+    const [a,e]=await Promise.all([
+      api("/rest/v1/agendamentos_consultas?select=*&order=data_hora_consulta.asc"),
+      api("/rest/v1/exames_preventivos?select=*&order=data_coleta.desc")
+    ]);
+    appointments=a.map(v=>({id:v.id_agendamento,name:v.nome_paciente,phone:v.telefone_whatsapp,
+      specialty:reverseSpec[v.especialidade]||v.especialidade,date:fmt(v.data_hora_consulta),
+      status:v.status_confirmacao==="cancelado"?"cancelled":v.status_confirmacao==="pendente"?"pending":"confirmed"}));
+    exams=e.map(v=>({id:v.id_exame,protocol:v.protocolo_coleta,name:v.nome_paciente,
+      phone:v.telefone_whatsapp,status:v.status_laudo==="aguardando_laboratorio"?"awaiting":"sent"}));
+    render();
+  }
+  async function login() {
+    const email=$("authEmail").value.trim(), password=$("authPassword").value;
+    if(!email||!password){notice("Informe email e senha da conta de testes.",true);return;}
+    try {
+      const data=await api("/auth/v1/token?grant_type=password","POST",{email,password});
+      if(!data.access_token)throw new Error("Autenticação não concluída.");
+      session=data;
+      $("authPassword").value="";
+      $("loginButton").classList.add("hidden");
+      $("logoutOperator").classList.remove("hidden");
+      await ensureProfile();
+      await loadSaved();
+      notice("Login confirmado. As próximas alterações serão gravadas no PostgreSQL.");
+    } catch(e){notice("Não foi possível entrar: "+e.message,true);}
+  }
+  async function signup() {
+    const email=$("authEmail").value.trim(),password=$("authPassword").value;
+    if(!email.includes("@")||password.length<8){notice("Informe email válido e senha de pelo menos 8 caracteres.",true);return;}
+    try {
+      const result=await api("/auth/v1/signup","POST",{email,password});
+      if(result.access_token){
+        session=result;
+        $("authPassword").value="";
+        $("loginButton").classList.add("hidden");
+        $("logoutOperator").classList.remove("hidden");
+        await ensureProfile();
+        await loadSaved();
+        notice("Conta de teste criada e autenticada.");
+      } else {
+        notice("Cadastro solicitado. Confirme o email, se necessário, e depois clique em Entrar. Use somente informações de teste.");
+      }
+    } catch(e){notice("Cadastro indisponível: "+e.message,true);}
+  }
+  async function submitForm(event) {
+    event.preventDefault();
+    const name=$("nome").value.trim(), phone=$("whatsapp").value.trim().replace(/\D/g,""), date=$("dataRegistro").value;
+    let err="";
+    if(name.length<3)err="Informe o nome completo fictício (mínimo 3 caracteres).";
+    else if(phone.length!==11)err="Telefone fictício deve conter 11 números (DDD + celular).";
+    else if(!date)err="Informe a data do registro.";
+    else if(currentMode==="consulta" && !(new Date(date).getTime()>Date.now()))err="Agende a consulta para uma data e horário futuros.";
+    const protocol=$("protocolo").value.trim();
+    if(!err&&currentMode==="exame"&&!protocol)err="Informe o protocolo do exame.";
+    if(!err&&currentMode==="exame"&&exams.some(e=>e.protocol.toLowerCase()===protocol.toLowerCase()))err="O protocolo já existe.";
+    if(err){$("formError").textContent=err;$("formError").classList.remove("hidden");return;}
+    try {
+      if(currentMode==="consulta"){
+        if(session) {
+          await api("/rest/v1/agendamentos_consultas","POST",{
+            id_operador:session.user.id,nome_paciente:name,telefone_whatsapp:phone,
+            especialidade:specialties[$("especialidade").value]||"clinico_geral",
+            data_hora_consulta:new Date(date).toISOString(),status_confirmacao:"pendente"
+          });
+          await loadSaved();
+        } else {
+          appointments.unshift({name,phone,specialty:$("especialidade").value,date:fmt(date),status:"pending"});
+          render();
+        }
+      } else {
+        if(session) {
+          await api("/rest/v1/exames_preventivos","POST",{
+            id_operador:session.user.id,protocolo_coleta:protocol,nome_paciente:name,
+            telefone_whatsapp:phone,data_coleta:date,status_laudo:"aguardando_laboratorio"
+          });
+          await loadSaved();
+        } else {
+          exams.unshift({protocol,name,phone,status:"awaiting"});
+          render();
+        }
+      }
+      $("nome").value="";$("whatsapp").value="";
+      showView("fila");
+      notice(session?"Registro salvo no banco PostgreSQL com sucesso.":"Registro de demonstração criado (não persistente).");
+    } catch(e){$("formError").textContent="Não foi possível salvar: "+e.message;$("formError").classList.remove("hidden");}
+  }
+  async function updateExam(i) {
+    const e=exams[i];
+    if(!e||e.status==="sent")return;
+    try{
+      if(session && e.id){
+        await api("/rest/v1/exames_preventivos?id_exame=eq."+encodeURIComponent(e.id),"PATCH",{
+          status_laudo:"disponivel_notificado"
+        });
+        await loadSaved();
+      } else {
+        e.status="sent";render();
+      }
+      notice("Disponibilidade registrada. Nenhuma mensagem foi enviada ao paciente.");
+    }catch(err){notice("Falha ao registrar: "+err.message,true);}
+  }
+  document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.view)));
+  document.querySelectorAll("[data-go]").forEach(b=>b.addEventListener("click",()=>showView(b.dataset.go)));
+  $("tabConsulta").addEventListener("click",()=>setMode("consulta"));
+  $("tabExame").addEventListener("click",()=>setMode("exame"));
+  $("registrationForm").addEventListener("submit",submitForm);
+  $("examTableBody").addEventListener("click",e=>{const b=e.target.closest("[data-notify]");if(b)updateExam(Number(b.dataset.notify));});
+  $("newExamButton").addEventListener("click",()=>{setMode("exame");showView("cadastro");});
+  $("newAppointmentButton").addEventListener("click",()=>{setMode("consulta");showView("cadastro");});
+  $("printButton").addEventListener("click",()=>window.print());
+  $("loginButton").addEventListener("click",login);
+  $("signupButton").addEventListener("click",signup);
+  $("logoutOperator").addEventListener("click",()=>{session=null;$("loginButton").classList.remove("hidden");$("logoutOperator").classList.add("hidden");location.reload();});
+  $("logoutButton").addEventListener("click",()=>{if(session)$("logoutOperator").click();else notice("Modo de demonstração: nenhuma sessão está aberta.");});
+  setMode("consulta");render();
+})();
+
+</script>
+</body>
+</html>
