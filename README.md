@@ -1,68 +1,143 @@
-# Sistema de Gestao de Agendamentos e Notificacao de Exames — UBS CAIC
+# Sistema de Gestão de Agendamentos e Notificação de Exames — UBS CAIC
 
-Projeto academico de **Projeto de Software**, Curso Superior de Tecnologia em Analise e Desenvolvimento de Sistemas (3º semestre).
+**Projeto acadêmico de Projeto de Software** — Tecnologia em Análise e Desenvolvimento de Sistemas (3º semestre).  
+**Unidade de referência do estudo:** UBS Sueli Dutra Alves (CAIC), Paranaguá/PR.  
+**ODS relacionado:** ODS 3 — Saúde e Bem-Estar.
 
-**Unidade parceira:** UBS Sueli Dutra Alves (CAIC), Conjunto Nilson Neves, Paranagua - PR.
+> **Atenção:** este é um **MVP acadêmico demonstrativo**, não um sistema oficial ou homologado da UBS. Não cadastre pacientes, contatos, resultados de exames ou outros dados reais de saúde. Utilize exclusivamente informações fictícias.
 
-**ODS relacionado:** ODS 3 — Saude e Bem-Estar.
+## Como avaliar o projeto
 
-## Problema e objetivo
+Existem **três maneiras** de avaliar as telas e os fluxos, com objetivos diferentes:
 
-O projeto busca apoiar a recepcao da UBS na organizacao de consultas, identificacao de vagas canceladas e acompanhamento da disponibilidade de exames preventivos, reduzindo esquecimento de consultas e deslocamentos desnecessarios.
+| Modalidade | Como acessar | Precisa de conta? | Os dados permanecem após atualizar a página? |
+| --- | --- | --- | --- |
+| **1. Teste local (download + Python)** | Baixar este repositório e executar `iniciar_teste.py` | **Não** | **Não**. Apenas arrays temporários no navegador. |
+| **2. Versão online — demonstração** | [Abrir a aplicação na Vercel](https://ubs-caic-gestao-avisos.vercel.app) | **Não** | **Não**. Os dados de visitantes são demonstrativos e temporários. |
+| **3. Versão online — modo autenticado** | Mesmo endereço da Vercel; criar conta de teste e entrar | **Sim** | **Previsto: sim**, por operações no PostgreSQL do Supabase, protegidas por RLS. O fluxo completo de cadastro/login e gravação ainda requer validação prática com uma conta de testes. |
 
-## Estado atual da implementacao
+O **link público final do trabalho acadêmico** é:
 
-Esta versao e um **prototipo web demonstrativo**, desenvolvido com Python e HTML/CSS/JavaScript. **Nao e um sistema apto para dados reais de saude ou operacao em producao.**
+**https://ubs-caic-gestao-avisos.vercel.app**
 
-O arquivo `app.py` utiliza `http.server` da biblioteca padrao do Python. A arquitetura planejada com Django, banco de dados e integracao de mensagens ainda nao foi implementada nesta versao.
+O avaliador pode explorar a versão online **sem cadastro ou login**: painel, cadastro demonstrativo de consultas, protocolos de exames e fila/alertas. Os dados inseridos no modo visitante não são encaminhados ao Supabase; somem ao recarregar a página.
 
-### Telas demonstradas
+O cadastro/login é necessário **apenas para testar a modalidade com persistência no banco**; não é necessário para visualizar o projeto. Mesmo com login, a aplicação continua sendo uma demonstração acadêmica e **não deve receber dados reais**.
 
-1. Painel de resumo do turno, com contadores atualizados a partir dos registros ficticios em memoria.
-2. Cadastro rapido de consultas e protocolos de exames preventivos.
-3. Fila e alertas, com simulacao de mudanca do status de aviso.
+## 1. Baixar e executar a versão de teste local
 
-**Limites relevantes:** nao existe autenticacao real, banco de dados, persistencia apos recarregar a pagina ou envio efetivo de WhatsApp/SMS. As informacoes usadas na interface sao ficticias. O botao de saida e apenas demonstrativo.
+A versão local foi mantida especificamente para **avaliação do código e dos fluxos no próprio computador**, sem internet, sem banco de dados, sem conta no Supabase e sem instalação de pacotes de terceiros.
 
-## Requisitos
+### Passo 1 — baixar o projeto
 
-- Python 3.12 (sem pacotes externos nesta etapa)
-- Navegador web atual
+1. Nesta página do GitHub, clique em **Code**.
+2. Clique em **Download ZIP**.
+3. Extraia o ZIP para uma pasta do computador. **Não execute os arquivos de dentro do ZIP.**
 
-## Executar localmente
+### Passo 2 — iniciar no Windows (maneira mais fácil)
 
-No Git Bash, na pasta do projeto:
+1. Instale **Python 3** (recomendado Python 3.12) em https://www.python.org/downloads/ e marque **Add Python to PATH** durante a instalação, caso necessário.
+2. Dentro da pasta extraída, dê **dois cliques em `iniciar_teste.bat`**.
+3. O script chama o Python, inicia o servidor local e tenta abrir o navegador automaticamente.
+4. Se o navegador não abrir, acesse manualmente **http://127.0.0.1:5000**.
 
-```bash
-python app.py
+Se preferir, abra um terminal na pasta extraída e execute:
+
+```powershell
+python iniciar_teste.py
 ```
 
-Abrir no navegador: http://127.0.0.1:5000
+### macOS ou Linux
 
-Para encerrar, pressionar `Ctrl+C` no terminal.
+Abra o terminal na pasta do projeto e execute:
 
-## Testes automatizados
+```bash
+python3 iniciar_teste.py
+```
+
+O navegador será aberto automaticamente quando possível. Caso contrário, visite **http://127.0.0.1:5000**.
+
+**Para encerrar:** mantenha o terminal aberto enquanto avalia e pressione `Ctrl+C` quando terminar.
+
+**Alternativa com o arquivo original:** `python app.py` (no macOS/Linux, `python3 app.py`). Em seguida, abra `http://127.0.0.1:5000` manualmente. O arquivo `app.py` depende apenas de `http_headers.py` e da biblioteca padrão do Python.
+
+**Importante:** a versão local **não acessa o banco Supabase**. Todos os nomes e telefones exibidos e inseridos devem ser fictícios. Ela é adequada para avaliar interface e fluxos simulados, e não prova persistência.
+
+### O que testar na versão local
+
+1. Abrir o **Painel Resumo do Turno** e conferir os indicadores.
+2. Acessar **Cadastro Rápido** e criar uma consulta fictícia com data e hora futuras.
+3. Tentar cadastrar uma consulta no passado e observar a validação.
+4. Cadastrar um **exame preventivo fictício** com protocolo não utilizado.
+5. Abrir **Fila e Alertas** e registrar uma alteração de status demonstrativa.
+6. Atualizar a página para verificar que os dados temporários voltam ao estado inicial.
+
+## 2. Avaliar a versão online final na Vercel
+
+**Link:** https://ubs-caic-gestao-avisos.vercel.app
+
+- **Sem login:** a interface funciona em modo público demonstrativo, com dados fictícios em memória. O avaliador pode navegar e testar os formulários sem fazer cadastro.
+- **Com login/cadastro de uma conta de testes:** o frontend utiliza o **Supabase Auth** para autenticação e a **Data API do Supabase PostgreSQL** para gravar e consultar registros permitidos pelas políticas RLS.
+- **Persistência autenticada:** há código para cadastramento e leitura de consultas e exames, mas **a jornada completa de login, confirmação de email, gravação e leitura após atualização ainda não foi homologada**. O envio de mensagens WhatsApp/SMS não está implementado.
+- As telas online são um **MVP demonstrativo**. Nenhuma modalidade constitui autorização para uso assistencial real.
+
+## 3. Tecnologias e arquitetura
+
+| Camada / finalidade | Tecnologia adotada |
+| --- | --- |
+| Código-fonte e versionamento | **GitHub** — repositório público, Pull Requests e GitHub Actions |
+| Interface web do deploy final | **HTML5, CSS3 e JavaScript** — `index.html` |
+| Hospedagem pública | **Vercel** — site estático em HTTPS integrado à branch `main` |
+| Banco de dados | **Supabase PostgreSQL 17** — projeto isolado `ubs-caic-gestao-avisos` |
+| Autenticação | **Supabase Auth** |
+| Controle de acesso a registros | **PostgreSQL Row Level Security (RLS)**, segregação por operador |
+| Servidor do protótipo local | **Python 3 / biblioteca padrão `http.server`** |
+| Implantação alternativa de demonstração | **Supabase Edge Functions (Deno/TypeScript)** |
+| Testes e disponibilidade | **Python unittest + GitHub Actions** |
+
+**Arquitetura da demonstração online:** navegador → site estático na **Vercel** → **Supabase Auth / Data API** → **PostgreSQL**, com validações e políticas RLS. O modo visitante **não grava no banco**.
+
+**Arquitetura da demonstração local:** navegador → servidor **Python `http.server`** → interface com dados apenas na memória do navegador.
+
+### Por que GitHub, Vercel e Supabase?
+
+Essas ferramentas foram escolhidas para viabilizar a entrega de um **projeto acadêmico individual** com código público, hospedagem acessível por HTTPS e banco de dados gerenciado, **utilizando modalidades gratuitas disponíveis para o projeto**. O uso gratuito está sujeito a limites e às políticas de cada provedor; não significa hospedagem ilimitada nem garantia de disponibilidade permanente.
+
+O GitHub permite auditoria do código-fonte. A Vercel publica a interface e faz deploy automático a partir da branch principal. O Supabase oferece PostgreSQL gerenciado, autenticação e políticas RLS, evitando a manutenção manual de um servidor de banco de dados.
+
+## 4. Organização dos arquivos principais
+
+```text
+.
+├── README.md                     # Este guia: execução local e acesso online
+├── GUIA_DO_AVALIADOR.md          # Roteiro passo a passo para avaliação
+├── iniciar_teste.bat             # Inicialização com dois cliques (Windows)
+├── iniciar_teste.py              # Inicialização local + abertura do navegador
+├── app.py                        # Protótipo local (Python http.server)
+├── http_headers.py               # Cabeçalhos HTTP do protótipo local
+├── index.html                    # Interface da versão Vercel
+├── vercel.json                   # Cabeçalhos de segurança na Vercel
+├── db/schema_supabase.sql        # Estrutura PostgreSQL e políticas RLS
+├── supabase/functions/           # Implantação alternativa em Edge Functions
+├── tests/                        # Testes automatizados de Python
+└── .github/workflows/            # Testes e monitoramento
+```
+
+Para verificar os testes automatizados localmente, na pasta do repositório:
 
 ```bash
 python -m unittest discover -s tests -v
 ```
 
-Os testes cobrem respostas HTTP (200 e 404), presenca das telas do prototipo e o codigo do contador de consultas. Nao validam integracao com mensageria ou seguranca em producao.
+## 5. Monitoramento, privacidade e limitações
 
-Um workflow em `.github/workflows/testes.yml` executa esses testes em push e Pull Request direcionado a `main`.
+O workflow [Monitoramento de disponibilidade — UBS CAIC](https://github.com/contato-anselmojr/ubs-caic-gestao-avisos/actions) consulta periodicamente (agendamento **a cada 15 minutos**) a URL final na Vercel, o endpoint de saúde da Edge Function e a conectividade com PostgreSQL. As execuções bem-sucedidas aparecem como `Success` e as falhas como `Failure`. As verificações podem sofrer atrasos do agendador do GitHub Actions.
 
-## Proximos passos planejados
+**Não há** integração real de WhatsApp/SMS, fila FIFO automática, acesso a sistemas oficiais do SUS, resultados clínicos ou autorização institucional para implantação na UBS. O protótipo é acadêmico e trabalha **exclusivamente com informações fictícias**.
 
-- Migrar o prototipo para a arquitetura monolitica em camadas com Django.
-- Adicionar modelos persistentes de operadores, consultas e exames.
-- Implementar login, permissoes, CSRF e demais controles de seguranca.
-- Desenvolver integracao desacoplada com provedor oficial de WhatsApp/SMS.
-- Testar acessibilidade, desempenho, cadastros e fluxo de mensagens com dados ficticios.
+### Documentação complementar
 
-## Privacidade
-
-Nao cadastrar nomes, telefones ou informacoes de saude reais nesta versao publica. O projeto nao exibe diagnosticos, resultados de exames nem documentos clinicos.
-
-## Versionamento
-
-Commits semanticos registram a publicacao do prototipo, correcao do contador, testes, integracao continua e documentacao.
+- [Guia do avaliador](GUIA_DO_AVALIADOR.md)
+- [Arquitetura e decisão Supabase](docs/ADR-001-supabase-postgresql.md)
+- [Deploy e monitoramento](docs/deploy-e-monitoramento.md)
+- [Deploy pela Vercel](docs/deploy-vercel.md)
